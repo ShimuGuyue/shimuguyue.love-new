@@ -1,0 +1,90 @@
+/*
+==================================================
+  导航栏样式
+==================================================
+*/
+
+/* 导航栏容器 — 固定顶部，标签 / 分隔线 / 图标连为一体 */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+  width: 100%;
+  height: 0.8rem;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  padding: 0 0.48rem 0 0.7rem;
+  background-color: #fff;
+  border-bottom: 1px solid #e6e7eb;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Logo — 左侧站点名，右侧自动推开 */
+.header__logo {
+  margin-right: auto;
+  font-size: 0.2rem;
+  font-weight: 700;
+  color: #333;
+  text-decoration: none;
+  letter-spacing: 1px;
+}
+
+/* 导航链接容器 */
+.header__links {
+  display: flex;
+  align-items: center;
+}
+
+/* 导航链接项 */
+.header__link {
+  position: relative;
+  font-size: 0.18rem;
+  color: #676b73;
+  text-decoration: none;
+  padding: 0.1rem 0.16rem;
+  cursor: pointer;
+  transition: color 500ms;
+}
+
+.header__link:not(:first-child) {
+  margin-left: 0.32rem;
+}
+
+/* Hover / 激活态 — 蓝色加粗高亮 */
+.header__link:hover,
+.header__link.router-link-exact-active {
+  color: #3778e5;
+  font-weight: 700;
+}
+
+/* 分隔竖线 */
+.header__separator {
+  width: 2px;
+  height: 0.18rem;
+  margin: 0 0.32rem;
+  background: #e6e7eb;
+}
+
+/* 社交图标区 */
+.header__social {
+  display: flex;
+  align-items: center;
+}
+
+.header__social-icon {
+  display: block;
+  width: 0.2rem;
+  height: 0.2rem;
+  background-color: #676b73;
+  mask-image: url(https://cdn.jsdelivr.net/npm/simple-icons@latest/icons/github.svg);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  transition: background-color 500ms;
+}
+
+.header__social-icon:hover {
+  background-color: #3778e5;
+}
