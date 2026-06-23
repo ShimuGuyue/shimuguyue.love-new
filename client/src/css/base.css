@@ -1,6 +1,6 @@
 /*
 ==================================================
-  网格背景
+  全局样式
 ==================================================
 */
 
@@ -9,12 +9,51 @@ html {
   font-size: 100px;
 }
 
+/*
+==================================================
+  主题变量
+==================================================
+*/
+
+:root {
+  --bg: #fff;
+  --text: #333;
+  --nav-bg: #fff;
+  --nav-border: #e6e7eb;
+  --nav-text: #676b73;
+  --nav-active: #3778e5;
+  --nav-separator: #e6e7eb;
+  --nav-shadow: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='dark'] {
+  --bg: #1a1a2e;
+  --text: #d0d0d8;
+  --nav-bg: #16213e;
+  --nav-border: #2a2a4a;
+  --nav-text: #9090a8;
+  --nav-active: #5db8d8;
+  --nav-separator: #2a2a4a;
+  --nav-shadow: rgba(0, 0, 0, 0.4);
+}
+
 /* 确保 body 撑满视口，消除默认边距 */
 body {
   margin: 0;
   min-height: 100vh;
   font-size: 0.16rem;
+  background-color: var(--bg);
+  color: var(--text);
+  transition:
+    background-color 300ms,
+    color 300ms;
 }
+
+/*
+==================================================
+  网格背景
+==================================================
+*/
 
 /* 网格背景层（固定在内容下方） */
 body::before {
@@ -43,12 +82,12 @@ body::before {
     ),
     /* 垂直线 */
     repeating-linear-gradient(
-        to right,
-        rgba(0, 0, 0, 0.12) 0px,
-        rgba(0, 0, 0, 0.12) 1px,
-        transparent 1px,
-        transparent 24px
-      );
+      to right,
+      rgba(0, 0, 0, 0.12) 0px,
+      rgba(0, 0, 0, 0.12) 1px,
+      transparent 1px,
+      transparent 24px
+    );
   mask-size:
     100% 100%,
     100% 100%;
@@ -56,4 +95,23 @@ body::before {
   /* 遮罩合成模式：取并集（add），横竖线都显示 */
   -webkit-mask-composite: source-over; /* Chrome / Safari */
   mask-composite: add; /* 标准语法 */
+}
+
+/* 暗色模式下网格线减淡 */
+[data-theme='dark'] body::before {
+  mask-image:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.06) 0px,
+      rgba(0, 0, 0, 0.06) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.06) 0px,
+      rgba(0, 0, 0, 0.06) 1px,
+      transparent 1px,
+      transparent 24px
+    );
 }
