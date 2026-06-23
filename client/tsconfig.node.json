@@ -1,0 +1,21 @@
+{
+  "extends": "@tsconfig/node24/tsconfig.json",
+  "include": [
+    "vite.config.*",
+    "vitest.config.*",
+    "cypress.config.*",
+    "playwright.config.*",
+    "eslint.config.*"
+  ],
+
+  "compilerOptions": {
+    "module": "preserve",
+    "moduleResolution": "bundler",
+
+    "types": ["node"],
+
+    "noEmit": true, // 不输出编译产物
+
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo" // 增量类型检查的缓存文件存放位置
+  }
+}
