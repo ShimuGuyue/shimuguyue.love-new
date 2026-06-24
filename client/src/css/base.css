@@ -1,0 +1,117 @@
+/*
+==================================================
+  全局样式
+==================================================
+*/
+
+/* rem 基准：1rem = 100px，与参考样式对齐 */
+html {
+  font-size: 100px;
+}
+
+/*
+==================================================
+  主题变量
+==================================================
+*/
+
+:root {
+  --bg: #fff;
+  --text: #333;
+  --nav-bg: #fff;
+  --nav-border: #e6e7eb;
+  --nav-text: #676b73;
+  --nav-active: #3778e5;
+  --nav-separator: #e6e7eb;
+  --nav-shadow: rgba(0, 0, 0, 0.06);
+}
+
+[data-theme='dark'] {
+  --bg: #1a1a2e;
+  --text: #d0d0d8;
+  --nav-bg: #16213e;
+  --nav-border: #2a2a4a;
+  --nav-text: #9090a8;
+  --nav-active: #5db8d8;
+  --nav-separator: #2a2a4a;
+  --nav-shadow: rgba(0, 0, 0, 0.4);
+}
+
+/* 确保 body 撑满视口，消除默认边距 */
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-size: 0.16rem;
+  background-color: var(--bg);
+  color: var(--text);
+  transition:
+    background-color 300ms,
+    color 300ms;
+}
+
+/*
+==================================================
+  网格背景
+==================================================
+*/
+
+/* 网格背景层（固定在内容下方） */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1; /* 垫在所有内容之下 */
+
+  /* --- 渐变颜色层 ---
+     对角线方向：左上蓝绿 → 右下粉紫 */
+  background-image: linear-gradient(135deg, #48c7b3 0%, #5db8d8 25%, #a87ccf 60%, #cf86a8 100%);
+  background-size: 100% 100%;
+
+  /* --- 网格遮罩层 ---
+     横线 + 竖线的并集，只在网格线处透出渐变颜色。
+     遮罩透明度 0.12 控制线条浓度，越小越淡。
+     24px 为一个网格周期，1px 线宽。 */
+  mask-image:
+    /* 水平线 */
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.12) 0px,
+      rgba(0, 0, 0, 0.12) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    /* 垂直线 */
+    repeating-linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.12) 0px,
+      rgba(0, 0, 0, 0.12) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+  mask-size:
+    100% 100%,
+    100% 100%;
+
+  /* 遮罩合成模式：取并集（add），横竖线都显示 */
+  -webkit-mask-composite: source-over; /* Chrome / Safari */
+  mask-composite: add; /* 标准语法 */
+}
+
+/* 暗色模式下网格线减淡 */
+[data-theme='dark'] body::before {
+  mask-image:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.06) 0px,
+      rgba(0, 0, 0, 0.06) 1px,
+      transparent 1px,
+      transparent 24px
+    ),
+    repeating-linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.06) 0px,
+      rgba(0, 0, 0, 0.06) 1px,
+      transparent 1px,
+      transparent 24px
+    );
+}

@@ -3,3 +3,11 @@ node_modules/
 
 ### Visual Studio Code
 *.code-workspace
+
+### CodeWhale
+.codewhale/
+.deepseek/
+AGENTS.md
+
+### 工作区
+test/
