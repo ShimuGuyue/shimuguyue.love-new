@@ -4,6 +4,8 @@ import DocsPage from '../views/DocsPage.vue'
 import ProjectsPage from '../views/ProjectsPage.vue'
 import FavoritesPage from '../views/FavoritesPage.vue'
 import AboutPage from '../views/AboutPage.vue'
+import AccountPage from '../views/AccountPage.vue'
+import LoginPage from '../views/LoginPage.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -32,6 +34,16 @@ const router = createRouter({
       path: '/about',
       name: 'about',
       component: AboutPage,
+    },
+    {
+      path: '/account',
+      name: 'account',
+      component: AccountPage,
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: LoginPage,
     },
   ],
 })
