@@ -38,15 +38,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 ## @endcode
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(PQXX REQUIRED IMPORTED_TARGET libpqxx)
+pkg_check_modules(SODIUM REQUIRED IMPORTED_TARGET libsodium)
 
 ## @brief 源文件清单
 add_executable(server
     src/main.cpp
+    src/crypto/hasher.cpp
     src/db/connection_pool.cpp
 )
 
 ## @brief 链接 PostgreSQL 库
-target_link_libraries(server PRIVATE PkgConfig::PQXX)
+target_link_libraries(server PRIVATE PkgConfig::PQXX PkgConfig::SODIUM)
 
 ## @brief 设置头文件搜索路径
 target_include_directories(server PRIVATE ${CMAKE_SOURCE_DIR}/src)
