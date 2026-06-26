@@ -1,12 +1,13 @@
 /**
  * @file main.cpp
- * @brief 服务入口 — 初始化数据库连接
+ * @brief 服务入口
  */
 
 #include <iostream>
 
 #include "config/config.h"
 #include "db/connection_pool.h"
+#include "http/server.h"
 
 int main()
 {
@@ -19,5 +20,10 @@ int main()
     }
     std::cout << "[ok] 数据库连接成功\n";
 
-    // TODO: 启动 HTTP 服务器，进入事件循环
+    http::Server server{ 8080, &pool };
+    if (!server.start())
+        return 1;
+
+    server.run();
+    return 0;
 }

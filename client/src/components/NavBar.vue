@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { useTheme } from '../composables/useTheme'
+import { useAuthStore } from '../stores/auth'
 import '../css/navbar.css'
 
 const { isDark, toggle } = useTheme()
+const auth = useAuthStore()
 </script>
 
 <template>
@@ -17,7 +19,16 @@ const { isDark, toggle } = useTheme()
       }"
     ></button>
 
-    <RouterLink to="/login/key" class="header__login-btn">获取权限</RouterLink>
+    <RouterLink
+      v-if="!auth.isLoggedIn"
+      to="/login/key"
+      class="header__login-btn"
+    >权限认证</RouterLink>
+    <RouterLink
+      v-else
+      to="/account"
+      class="header__login-btn"
+    >{{ auth.user?.username || '匿名用户' }}</RouterLink>
 
     <nav class="header__links">
       <RouterLink to="/" class="header__link">首页</RouterLink>

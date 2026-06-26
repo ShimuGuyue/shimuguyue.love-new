@@ -45,6 +45,9 @@ add_executable(server
     src/main.cpp
     src/crypto/hasher.cpp
     src/db/connection_pool.cpp
+    src/http/protocol.cpp
+    src/http/handlers.cpp
+    src/http/server.cpp
 )
 
 ## @brief 链接 PostgreSQL 库

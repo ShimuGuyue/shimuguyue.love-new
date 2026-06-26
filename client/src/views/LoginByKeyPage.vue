@@ -1,17 +1,47 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
+const router = useRouter()
+const auth = useAuthStore()
 const key = ref('')
 const submitting = ref(false)
+const errorMsg = ref('')
 
-function handleSubmit() {
+async function handleSubmit()
+{
+  errorMsg.value = ''
   if (!key.value.trim()) return
+
   submitting.value = true
-  // TODO: 后端接口对接
-  console.log('key login:', key.value)
-  setTimeout(() => {
+  try
+  {
+    const res = await fetch('/api/login/key', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key: key.value }),
+    })
+    const data = await res.json()
+
+    if (data.success)
+    {
+      auth.setUser(data.user)
+      router.push('/')
+    }
+    else
+    {
+      errorMsg.value = data.message || '登录失败'
+    }
+  }
+  catch
+  {
+    errorMsg.value = '网络错误，请稍后重试'
+  }
+  finally
+  {
     submitting.value = false
-  }, 1000)
+  }
 }
 </script>
 
@@ -24,13 +54,19 @@ function handleSubmit() {
       <form class="login-form" @submit.prevent="handleSubmit">
         <div class="login-form__group">
           <label class="login-form__label" for="key">密钥</label>
-          <textarea
+          <input
             id="key"
             v-model="key"
-            class="login-form__textarea"
+            class="login-form__input"
+            type="text"
             placeholder="请粘贴密钥"
-          ></textarea>
+          />
         </div>
+
+        <p
+          v-if="errorMsg"
+          style="color: #e74c3c; font-size: 0.14rem; text-align: center; margin: 0;"
+        >{{ errorMsg }}</p>
 
         <button
           type="submit"

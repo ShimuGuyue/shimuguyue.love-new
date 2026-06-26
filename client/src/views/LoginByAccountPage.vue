@@ -1,18 +1,48 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 
+const router = useRouter()
+const auth = useAuthStore()
 const username = ref('')
 const password = ref('')
 const submitting = ref(false)
+const errorMsg = ref('')
 
-function handleSubmit() {
+async function handleSubmit()
+{
+  errorMsg.value = ''
   if (!username.value.trim() || !password.value) return
+
   submitting.value = true
-  // TODO: 后端接口对接
-  console.log('account login:', username.value, password.value)
-  setTimeout(() => {
+  try
+  {
+    const res = await fetch('/api/login/account', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username.value, password: password.value }),
+    })
+    const data = await res.json()
+
+    if (data.success)
+    {
+      auth.setUser(data.user)
+      router.push('/')
+    }
+    else
+    {
+      errorMsg.value = data.message || '登录失败'
+    }
+  }
+  catch
+  {
+    errorMsg.value = '网络错误，请稍后重试'
+  }
+  finally
+  {
     submitting.value = false
-  }, 1000)
+  }
 }
 </script>
 
@@ -46,6 +76,11 @@ function handleSubmit() {
             autocomplete="current-password"
           />
         </div>
+
+        <p
+          v-if="errorMsg"
+          style="color: #e74c3c; font-size: 0.14rem; text-align: center; margin: 0;"
+        >{{ errorMsg }}</p>
 
         <button
           type="submit"
