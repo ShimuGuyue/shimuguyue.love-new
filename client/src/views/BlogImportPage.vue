@@ -23,6 +23,8 @@ const editableBody = ref('')
 const category = ref('')
 const tags = ref('')
 const message = ref('')
+const isError = ref(false)
+let toastTimer: ReturnType<typeof setTimeout> | null = null
 
 const auth = useAuthStore()
 
@@ -58,13 +60,15 @@ function onFileChange(e: Event)
   const reader = new FileReader()
   reader.onload = () =>
   {
-    const raw = reader.result as string
+    const raw = normalizeNl(reader.result as string)
     fileContent.value = raw
-    parseFrontmatter(raw)
+    const missing = parseFrontmatter(raw)
+    if (missing.length > 0)
+      showToast(`文档缺少：${missing.join('、')}`, true)
     const lines = raw.split('\n')
     if (lines[0]?.trim() === '---')
     {
-      const end = lines.indexOf('---', 1)
+      const end = findEndMarker(lines)
       editableBody.value = end !== -1
         ? lines.slice(end + 1).join('\n').trim()
         : raw.trim()
@@ -77,13 +81,38 @@ function onFileChange(e: Event)
   reader.readAsText(f)
 }
 
-function parseFrontmatter(md: string)
+function showToast(msg: string, error: boolean)
 {
-  const lines = md.split('\n')
-  if (lines[0]?.trim() !== '---') return
+  if (toastTimer) clearTimeout(toastTimer)
+  message.value = msg
+  isError.value = error
+  toastTimer = setTimeout(() => { message.value = '' }, 3000)
+}
 
-  const end = lines.indexOf('---', 1)
-  if (end === -1) return
+/** 统一换行符为 \n */
+function normalizeNl(s: string): string
+{
+  return s.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+}
+
+/** 在 lines[1..] 中找独立成行的 ---（trim 后精确匹配） */
+function findEndMarker(lines: string[]): number
+{
+  for (let i = 1; i < lines.length; i++)
+  {
+    if (lines[i].trim() === '---') return i
+  }
+  return -1
+}
+
+function parseFrontmatter(md: string): string[]
+{
+  const missing: string[] = []
+  const lines = normalizeNl(md).split('\n')
+  if (lines[0]?.trim() !== '---') return missing
+
+  const end = findEndMarker(lines)
+  if (end === -1) return missing
 
   const fm: Record<string, string> = {}
   for (let i = 1; i < end; i++)
@@ -92,22 +121,37 @@ function parseFrontmatter(md: string)
     const colon = line.indexOf(':')
     if (colon === -1) continue
     const key = line.slice(0, colon).trim()
-    const val = line.slice(colon + 1).trim()
+    let val = line.slice(colon + 1).trim()
+    // 去掉值两侧的引号
+    if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'")))
+      val = val.slice(1, -1)
     fm[key] = val
   }
 
-  if (fm.category) category.value = fm.category
+  // 兼容 category / categorie / categories 等变体拼写
+  const cat = fm.category ?? fm.categorie ?? fm.categories
+  if (cat) category.value = cat
+  else missing.push('类型')
+
   if (fm.tags)
   {
     let raw = fm.tags
     if (raw.startsWith('[') && raw.endsWith(']'))
+    {
       raw = raw.slice(1, -1)
+    }
     tags.value = raw
       .split(',')
-      .map((s) => s.trim())
+      .map((s) => s.trim().replace(/^["']|["']$/g, ''))
       .filter(Boolean)
       .join(', ')
   }
+  else
+  {
+    missing.push('标签')
+  }
+
+  return missing
 }
 </script>
 
@@ -179,24 +223,19 @@ function parseFrontmatter(md: string)
     毛玻璃编辑区
     ============================================================ -->
     <div class="import__canvas doc-bg">
-      <div v-if="!hasContent" class="import__canvas-empty">
-        <span class="import__drop-icon">↓</span>
-        <span class="import__drop-text">点击「导入文档」或拖拽 Markdown 文件到此处</span>
-      </div>
-      <template v-else>
-        <div class="import__rechoose">
-          <label class="import__rechoose-link" for="import-file-input">重新选择</label>
-        </div>
-        <textarea
-          v-model="editableBody"
-          class="import__editor"
-          placeholder="在此编辑 Markdown 正文…"
-        ></textarea>
-      </template>
+      <textarea
+        v-model="editableBody"
+        class="import__editor"
+        placeholder="在此编辑 Markdown 正文…"
+      ></textarea>
     </div>
 
     <Transition name="import-toast">
-      <p v-if="message" class="import__toast">{{ message }}</p>
+      <p
+        v-if="message"
+        class="import__toast"
+        :class="{ 'import__toast--error': isError }"
+      >{{ message }}</p>
     </Transition>
   </main>
 </template>
@@ -385,51 +424,6 @@ function parseFrontmatter(md: string)
 }
 
 /* ========================================================================
-   空状态
-   ======================================================================== */
-.import__canvas-empty
-{
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.12rem;
-  color: var(--nav-text);
-}
-
-.import__drop-icon
-{
-  font-size: 0.48rem;
-  color: var(--nav-active);
-  opacity: 0.5;
-}
-
-.import__drop-text
-{
-  font-size: 0.15rem;
-  text-align: center;
-}
-
-/* ========================================================================
-   重新选择
-   ======================================================================== */
-.import__rechoose
-{
-  text-align: right;
-  margin-bottom: 0.12rem;
-  flex-shrink: 0;
-}
-
-.import__rechoose-link
-{
-  font-size: 0.12rem;
-  color: var(--nav-active);
-  cursor: pointer;
-  text-decoration: underline;
-}
-
-/* ========================================================================
    Textarea
    ======================================================================== */
 .import__editor
@@ -448,13 +442,44 @@ function parseFrontmatter(md: string)
   background: transparent;
 }
 
+.import__editor::-webkit-scrollbar
+{
+  width: 0.04rem;
+}
+
+.import__editor::-webkit-scrollbar-track
+{
+  background: transparent;
+}
+
+.import__editor::-webkit-scrollbar-thumb
+{
+  background: rgba(128, 128, 128, 0.3);
+  border-radius: 0.02rem;
+}
+
+.import__editor::-webkit-scrollbar-thumb:hover
+{
+  background: rgba(128, 128, 128, 0.5);
+}
+
+[data-theme='dark'] .import__editor::-webkit-scrollbar-thumb
+{
+  background: rgba(200, 200, 200, 0.2);
+}
+
+[data-theme='dark'] .import__editor::-webkit-scrollbar-thumb:hover
+{
+  background: rgba(200, 200, 200, 0.35);
+}
+
 /* ========================================================================
    Toast
    ======================================================================== */
 .import__toast
 {
   position: fixed;
-  bottom: 0.4rem;
+  top: 0.9rem;
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;
@@ -464,6 +489,15 @@ function parseFrontmatter(md: string)
   background: rgba(0, 0, 0, 0.78);
   border-radius: 0.06rem;
   backdrop-filter: blur(8px);
+}
+
+.import__toast--error
+{
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.25);
+  backdrop-filter: blur(12px);
+  font-weight: 600;
 }
 
 .import-toast-enter-active,
@@ -476,6 +510,6 @@ function parseFrontmatter(md: string)
 .import-toast-leave-to
 {
   opacity: 0;
-  transform: translateX(-50%) translateY(0.12rem);
+  transform: translateX(-50%) translateY(-0.08rem);
 }
 </style>

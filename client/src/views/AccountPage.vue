@@ -12,6 +12,9 @@ const auth = useAuthStore()
 
 const PERM_LABELS: Record<string, string> = {
   super_admin: '超级管理员'
+}
+
+function permLabel(perm: string): string
 {
   return PERM_LABELS[perm] ?? perm
 }
