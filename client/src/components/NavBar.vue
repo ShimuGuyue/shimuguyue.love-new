@@ -32,7 +32,7 @@ const auth = useAuthStore()
 
     <nav class="header__links">
       <RouterLink to="/" class="header__link">首页</RouterLink>
-      <RouterLink to="/docs" class="header__link">文章</RouterLink>
+      <RouterLink to="/blogs" class="header__link">博客</RouterLink>
       <RouterLink to="/projects" class="header__link">项目</RouterLink>
       <RouterLink to="/favorites" class="header__link">收藏夹</RouterLink>
       <RouterLink to="/about" class="header__link">关于我</RouterLink>
