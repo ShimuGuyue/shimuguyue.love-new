@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { useAuthStore } from '../stores/auth'
 import HomePage from '../views/HomePage.vue'
 import BlogPage from '../views/BlogPage.vue'
+import BlogImportPage from '../views/BlogImportPage.vue'
 import ProjectsPage from '../views/ProjectsPage.vue'
 import FavoritesPage from '../views/FavoritesPage.vue'
 import AboutPage from '../views/AboutPage.vue'
@@ -20,6 +22,11 @@ const router = createRouter({
       path: '/blogs',
       name: 'blogs',
       component: BlogPage,
+    },
+    {
+      path: '/blogs/import',
+      name: 'blog-import',
+      component: BlogImportPage,
     },
     {
       path: '/projects',
@@ -52,6 +59,38 @@ const router = createRouter({
       component: LoginByAccountPage,
     },
   ],
+})
+
+/**
+ * @brief 全局前置守卫 — 权限校验
+ */
+router.beforeEach((to, _from, next) =>
+{
+  const required = to.meta.requiresPermission as string | undefined
+
+  if (!required)
+  {
+    next()
+    return
+  }
+
+  const auth = useAuthStore()
+
+  if (!auth.isLoggedIn)
+  {
+    auth.setRedirectReason(`访问 ${to.path} 需要登录，请先登录`)
+    next({ name: 'login-key' })
+    return
+  }
+
+  if (!auth.hasPermission(required))
+  {
+    auth.setRedirectReason(`你的帐号没有「${required}」权限，无法访问 ${to.path}`)
+    next({ name: 'home' })
+    return
+  }
+
+  next()
 })
 
 export default router

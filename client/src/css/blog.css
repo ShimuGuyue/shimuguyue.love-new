@@ -367,3 +367,27 @@
   color: var(--card-time-text);
   margin-top: auto;
 }
+
+/*
+==================================================
+  文档背景 — 毛玻璃
+==================================================
+*/
+
+.doc-bg
+{
+  border-radius: 0.12rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(2px) saturate(100%);
+  -webkit-backdrop-filter: blur(2px) saturate(100%);
+  box-shadow: 0 0.08rem 0.32rem rgba(0, 0, 0, 0.08);
+  overflow: hidden;
+}
+
+[data-theme='dark'] .doc-bg
+{
+  background: rgba(22, 28, 50, 0.15);
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 0.08rem 0.32rem rgba(0, 0, 0, 0.35);
+}

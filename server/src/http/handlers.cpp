@@ -29,21 +29,33 @@ std::string handle_key_login(ConnectionPool& pool, const std::string& body)
     try
     {
         pqxx::result result = tx->exec(
-            "SELECT id, username, key_hash FROM users");
+            "SELECT u.id, u.username, u.key_hash, "
+            "  COALESCE(array_to_json(array_agg(p.permission_name) "
+            "    FILTER (WHERE p.permission_name IS NOT NULL)), '[]') AS permissions "
+            "FROM users u "
+            "LEFT JOIN user_permissions up ON u.id = up.user_id "
+            "LEFT JOIN permissions p ON up.permission_id = p.id "
+            "GROUP BY u.id");
 
         for (auto row : result)
         {
+            if (row["key_hash"].is_null())
+                continue;
+
             std::string stored_hash = row["key_hash"].c_str();
             if (crypto::Hasher::check(key, stored_hash))
             {
                 int id = row["id"].as<int>();
                 std::string username = row["username"].c_str();
+                std::string permissions_json = row["permissions"].c_str();
                 tx->commit();
 
                 std::ostringstream json;
                 json << R"({"success":true,"message":"登录成功",)"
                      << R"("user":{"id":)" << id
-                     << R"(,"username":")" << username << R"("}})";
+                     << R"(,"username":")" << username
+                     << R"(","permissions":)" << permissions_json
+                     << R"(}})";
                 return build_response(200, json.str());
             }
         }
@@ -72,7 +84,14 @@ std::string handle_account_login(ConnectionPool& pool, const std::string& body)
     try
     {
         pqxx::result result = tx->exec(
-            "SELECT id, password_hash FROM users WHERE username = $1",
+            "SELECT u.id, u.password_hash, "
+            "  COALESCE(array_to_json(array_agg(p.permission_name) "
+            "    FILTER (WHERE p.permission_name IS NOT NULL)), '[]') AS permissions "
+            "FROM users u "
+            "LEFT JOIN user_permissions up ON u.id = up.user_id "
+            "LEFT JOIN permissions p ON up.permission_id = p.id "
+            "WHERE u.username = $1 "
+            "GROUP BY u.id",
             pqxx::params(username));
 
         if (result.empty())
@@ -83,6 +102,7 @@ std::string handle_account_login(ConnectionPool& pool, const std::string& body)
 
         int id = result[0]["id"].as<int>();
         std::string stored_hash = result[0]["password_hash"].c_str();
+        std::string permissions_json = result[0]["permissions"].c_str();
         tx->commit();
 
         if (!crypto::Hasher::check(password, stored_hash))
@@ -91,7 +111,9 @@ std::string handle_account_login(ConnectionPool& pool, const std::string& body)
         std::ostringstream json;
         json << R"({"success":true,"message":"登录成功",)"
              << R"("user":{"id":)" << id
-             << R"(,"username":")" << username << R"("}})";
+             << R"(,"username":")" << username
+             << R"(","permissions":)" << permissions_json
+             << R"(}})";
         return build_response(200, json.str());
     }
     catch (const std::exception& e)
