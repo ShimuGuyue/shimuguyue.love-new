@@ -39,7 +39,7 @@
 .header__theme-btn {
   width: 0.24rem;
   height: 0.24rem;
-  margin-right: auto;
+  margin-right: 0.2rem;
   padding: 0;
   border: none;
   background: none;
@@ -81,6 +81,28 @@
 .header__link.router-link-exact-active {
   color: var(--nav-active);
   font-weight: 700;
+}
+
+/* 登录按钮 — 仿宋四字，主题按钮右侧 */
+.header__login-btn {
+  font-family: "FangSong", "仿宋", "FZFS", "STFangsong", serif;
+  font-size: 0.16rem;
+  color: var(--nav-text);
+  text-decoration: none;
+  padding: 0.04rem 0.08rem;
+  margin-right: auto;
+  border: 1px solid var(--nav-border);
+  border-radius: 0.04rem;
+  line-height: 1.5;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color 300ms, border-color 300ms, background-color 300ms;
+}
+
+.header__login-btn:hover {
+  color: var(--nav-active);
+  border-color: var(--nav-active);
+  background-color: rgba(55, 120, 229, 0.06);
 }
 
 /* 分隔竖线 */
