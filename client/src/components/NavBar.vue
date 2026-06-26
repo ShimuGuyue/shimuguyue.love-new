@@ -17,7 +17,7 @@ const { isDark, toggle } = useTheme()
       }"
     ></button>
 
-    <RouterLink to="/login" class="header__login-btn">获取权限</RouterLink>
+    <RouterLink to="/login/key" class="header__login-btn">获取权限</RouterLink>
 
     <nav class="header__links">
       <RouterLink to="/" class="header__link">首页</RouterLink>

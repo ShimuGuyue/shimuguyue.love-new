@@ -1,4 +1,5 @@
 import './css/base.css'
+import './css/login.css'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
