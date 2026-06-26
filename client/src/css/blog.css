@@ -1,0 +1,369 @@
+/*
+==================================================
+  博客页面 — 筛选器 + 卡片网格
+==================================================
+*/
+
+/*
+==================================================
+  主题变量（博客专属）
+==================================================
+*/
+
+:root {
+  --card-bg: #f8f9fb;
+  --card-gradient: linear-gradient(135deg, rgba(72,199,179,0.22) 0%, rgba(93,184,216,0.22) 25%, rgba(168,124,207,0.18) 60%, rgba(207,134,168,0.18) 100%);
+  --card-hover-shadow: rgba(0, 0, 0, 0.12);
+  --card-hover-lift: -4px;
+  --chip-bg: #f0f1f4;
+  --chip-text: #676b73;
+  --chip-active-bg: #3778e5;
+  --chip-active-text: #fff;
+  --chip-hover-bg: #e4e6ec;
+  --search-bg: #fff;
+  --search-border: #d0d2d8;
+  --search-focus-border: #3778e5;
+  --search-placeholder: #b0b3bc;
+  --filter-bg: rgba(255, 255, 255, 0.5);
+  --filter-border: #e6e7eb;
+  --mode-btn-bg: #f0f1f4;
+  --mode-btn-text: #676b73;
+  --mode-btn-hover-bg: #e4e6ec;
+  --card-category-bg: #ebf0ff;
+  --card-category-text: #3778e5;
+  --card-tag-bg: #f0f1f4;
+  --card-tag-text: #888;
+  --card-time-text: #b0b3bc;
+}
+
+[data-theme='dark'] {
+  --card-bg: #1e1e3a;
+  --card-gradient: linear-gradient(135deg, rgba(72,199,179,0.28) 0%, rgba(93,184,216,0.28) 25%, rgba(168,124,207,0.22) 60%, rgba(207,134,168,0.22) 100%);
+  --card-hover-shadow: rgba(0, 0, 0, 0.5);
+  --card-hover-lift: -4px;
+  --chip-bg: #2a2a4a;
+  --chip-text: #9090a8;
+  --chip-active-bg: #5db8d8;
+  --chip-active-text: #16213e;
+  --chip-hover-bg: #35355a;
+  --search-bg: #16213e;
+  --search-border: #3a3a5c;
+  --search-focus-border: #5db8d8;
+  --search-placeholder: #6a6a8a;
+  --filter-bg: rgba(22, 33, 62, 0.5);
+  --filter-border: #2a2a4a;
+  --mode-btn-bg: #2a2a4a;
+  --mode-btn-text: #9090a8;
+  --mode-btn-hover-bg: #35355a;
+  --card-category-bg: #1e3350;
+  --card-category-text: #5db8d8;
+  --card-tag-bg: #2a2a4a;
+  --card-tag-text: #7a7a9a;
+  --card-time-text: #6a6a8a;
+}
+
+/*
+==================================================
+  页面容器
+==================================================
+*/
+
+.blog {
+  padding-top: 0.8rem;
+  padding-bottom: 0.6rem;
+}
+
+/*
+==================================================
+  筛选器区域
+==================================================
+*/
+
+.blog__filter {
+  position: relative;
+  max-width: 12rem;
+  margin: 0.3rem auto 0;
+  padding: 0.24rem 0.32rem;
+  background-color: var(--filter-bg);
+  border: 1px solid var(--filter-border);
+  border-radius: 0.12rem;
+  backdrop-filter: blur(8px);
+  transition:
+    background-color 300ms,
+    border-color 300ms;
+}
+
+.blog__filter-row {
+  display: flex;
+  align-items: center;
+  gap: 0.12rem;
+  flex-wrap: wrap;
+}
+
+.blog__filter-row + .blog__filter-row {
+  margin-top: 0.16rem;
+}
+
+/* 标签 / 分类 标题 */
+.blog__filter-label {
+  flex-shrink: 0;
+  font-size: 0.18rem;
+  font-weight: 600;
+  color: var(--nav-text);
+  margin-right: 0.04rem;
+  min-width: 0.4rem;
+  line-height: 1.5;
+  transform: translateY(-0.02rem);
+}
+
+/* chip 容器 */
+.blog__filter-chips {
+  display: flex;
+  align-items: center;
+  gap: 0.08rem;
+  flex-wrap: wrap;
+  flex: 1;
+  border-left: 1px solid var(--nav-border);
+  padding-left: 0.12rem;
+}
+
+/* 单个 chip */
+.blog__chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.04rem 0.14rem;
+  font-size: 0.13rem;
+  color: var(--chip-text);
+  background-color: var(--chip-bg);
+  border: none;
+  border-radius: 0.2rem;
+  cursor: pointer;
+  transition:
+    background-color 200ms,
+    color 200ms,
+    transform 150ms;
+  user-select: none;
+  line-height: 1.6;
+}
+
+.blog__chip:hover {
+  background-color: var(--chip-hover-bg);
+}
+
+.blog__chip:active {
+  transform: scale(0.96);
+}
+
+.blog__chip--active {
+  color: var(--chip-active-text);
+  background-color: var(--chip-active-bg);
+}
+
+.blog__chip--active:hover {
+  background-color: var(--chip-active-bg);
+  opacity: 0.85;
+}
+
+/* 模式切换按钮 */
+.blog__mode-btn {
+  flex-shrink: 0;
+  padding: 0.02rem 0.08rem;
+  font-size: 0.11rem;
+  color: var(--nav-active);
+  background-color: transparent;
+  border: 1px solid var(--nav-active);
+  border-radius: 0.06rem;
+  cursor: pointer;
+  transition:
+    background-color 200ms,
+    color 200ms;
+  line-height: 1.6;
+  margin-right: 0.04rem;
+}
+
+.blog__mode-btn:hover {
+  background-color: var(--nav-active);
+  color: var(--chip-active-text);
+}
+
+/*
+==================================================
+  搜索框
+==================================================
+*/
+
+.blog__search {
+  position: relative;
+  margin-top: 0.16rem;
+}
+
+/* 搜索图标（放大镜） */
+.blog__search::before {
+  content: '';
+  position: absolute;
+  left: 0.14rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 0.18rem;
+  height: 0.18rem;
+  background-color: var(--search-placeholder);
+  mask-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+}
+
+.blog__search-input {
+  width: 100%;
+  padding: 0.08rem 0.16rem 0.08rem 0.42rem;
+  font-size: 0.14rem;
+  color: var(--text);
+  background-color: var(--search-bg);
+  border: 1px solid var(--search-border);
+  border-radius: 0.24rem;
+  outline: none;
+  box-sizing: border-box;
+  transition:
+    border-color 200ms,
+    background-color 300ms,
+    color 300ms;
+}
+
+.blog__search-input::placeholder {
+  color: var(--search-placeholder);
+}
+
+.blog__search-input:focus {
+  border-color: var(--search-focus-border);
+}
+
+/*
+==================================================
+  卡片网格
+==================================================
+*/
+
+.blog__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.24rem;
+  max-width: 12rem;
+  margin: 0.24rem auto 0;
+  padding: 0 0.32rem;
+}
+
+@media (max-width: 1000px) {
+  .blog__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .blog__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 空结果提示 */
+.blog__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 0.8rem 0;
+  font-size: 0.16rem;
+  color: var(--card-time-text);
+}
+
+/*
+==================================================
+  卡片
+==================================================
+*/
+
+.blog__card {
+  display: flex;
+  flex-direction: column;
+  padding: 0.24rem;
+  background-color: var(--card-bg);
+  background-image: var(--card-gradient);
+  border-radius: 0.12rem;
+  text-decoration: none;
+  color: inherit;
+  transition:
+    transform 250ms ease,
+    box-shadow 250ms ease,
+    background-color 300ms;
+  cursor: pointer;
+}
+
+.blog__card:hover {
+  transform: translateY(var(--card-hover-lift));
+  box-shadow: 0 6px 24px var(--card-hover-shadow);
+}
+
+/* 卡片标题 */
+.blog__card-title {
+  margin: 0 0 0.12rem;
+  font-size: 0.18rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.4;
+  /* 单行省略 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* 卡片描述 */
+.blog__card-desc {
+  margin: 0 0 0.16rem;
+  font-size: 0.14rem;
+  color: var(--nav-text);
+  line-height: 1.6;
+  /* 两行省略 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  flex: 1;
+}
+
+/* 卡片 meta 行 — 分类 + 标签 + 时间 */
+.blog__card-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.08rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.12rem;
+}
+
+.blog__card-category {
+  display: inline-block;
+  padding: 0.02rem 0.1rem;
+  font-size: 0.12rem;
+  font-weight: 600;
+  color: var(--card-category-text);
+  background-color: var(--card-category-bg);
+  border-radius: 0.04rem;
+  line-height: 1.6;
+}
+
+.blog__card-tag {
+  display: inline-block;
+  padding: 0.02rem 0.12rem;
+  font-size: 0.12rem;
+  color: var(--card-tag-text);
+  background-color: var(--card-tag-bg);
+  border-radius: 0.12rem;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
+}
+
+.blog__card-time {
+  display: block;
+  font-size: 0.12rem;
+  color: var(--card-time-text);
+  margin-top: auto;
+}
