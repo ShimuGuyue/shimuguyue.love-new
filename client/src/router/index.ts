@@ -18,7 +18,7 @@ const router = createRouter({
     },
     {
       path: '/blogs',
-      name: 'bolgs',
+      name: 'blogs',
       component: BlogPage,
     },
     {
