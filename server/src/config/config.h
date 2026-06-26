@@ -1,39 +1,40 @@
 /**
  * @file config.h
- * @brief 数据库配置
+ * @brief 服务配置
  *
- * @details
- * 连接参数完全由 libpq 原生配置文件管理
- * - @c ~/.pg_service.conf：服务定义（dbname、user、host、port）
- * - @c ~/.pgpass：密码
+ * @details 全部配置集中于此。
+ * - 数据库连接：~/.pg_service.conf + ~/.pgpass
+ * - 博客存储路径：环境变量 BLOG_ROOT，启动时强制校验
  */
 
 #pragma once
 #include <string>
+#include <cstdlib>
+#include <optional>
 
 namespace config
 {
 
-/**
- * @brief 获取 PostgreSQL 连接字符串
- *
- * 引用 @c ~/.pg_service.conf 中定义的 @c [love] 节。
- *
- * @see https://www.postgresql.org/docs/current/libpq-pgservice.html
- */
-std::string db_connection_string()
-{
-    return "service=love";
-}
+inline std::string db_connection_string() { return "service=love"; }
+
+inline int pool_size() { return 5; }
 
 /**
- * @brief 获取连接池大小
+ * @brief 博客文档存储根目录（绝对路径）
  *
- * @return 固定值 5
+ * @return 环境变量 BLOG_ROOT 的值（末尾保证有 /）；
+ *         未设置返回 std::nullopt
  */
-int pool_size()
+inline std::optional<std::string> blog_root()
 {
-    return 5;
+    const char* env = std::getenv("BLOG_ROOT");
+    if (!env || env[0] == '\0')
+        return std::nullopt;
+
+    std::string path = env;
+    if (path.back() != '/')
+        path += '/';
+    return path;
 }
 
 } // namespace config
