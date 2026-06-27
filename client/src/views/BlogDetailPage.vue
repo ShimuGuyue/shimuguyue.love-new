@@ -50,6 +50,7 @@ interface ArticleDetail {
   title: string
   category: string
   tags: string[]
+  time: string
   content: string
 }
 
@@ -161,20 +162,6 @@ watch(
 
     <!-- 文章内容 -->
     <template v-else-if="article">
-      <header class="blog-detail__header">
-        <h1 class="blog-detail__title">{{ article.title }}</h1>
-        <div class="blog-detail__meta">
-          <span class="blog-detail__category">{{ article.category }}</span>
-          <span
-            v-for="tag in article.tags"
-            :key="tag"
-            class="blog-detail__tag"
-          >
-            {{ tag }}
-          </span>
-        </div>
-      </header>
-
       <div
         v-if="html"
         class="blog-detail__body markdown-body"

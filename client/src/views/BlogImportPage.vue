@@ -22,6 +22,7 @@ const fileContent = ref('')
 const editableBody = ref('')
 const title = ref('')
 const category = ref('')
+const description = ref('')
 const tags = ref('')
 const message = ref('')
 const isError = ref(false)
@@ -95,6 +96,7 @@ async function handleFinish()
   const body = JSON.stringify({
     title: title.value.trim(),
     category: category.value.trim(),
+    description: description.value.trim(),
     tags: tags.value,
     body: editableBody.value,
   })
@@ -160,6 +162,9 @@ function parseFrontmatter(md: string): string[]
   // 标题
   if (fm.title) title.value = fm.title
 
+  // 描述
+  if (fm.description) description.value = fm.description
+
   // 兼容 category / categorie / categories 等变体拼写
   const cat = fm.category ?? fm.categorie ?? fm.categories
   if (cat) category.value = cat
@@ -193,6 +198,7 @@ function parseFrontmatter(md: string): string[]
     顶部栏
     ============================================================ -->
     <div class="import__bar">
+      <!-- 第一行：标题 / 描述 / 导入文档 -->
       <div class="import__bar-row">
         <div class="import__field">
           <label class="import__label" for="prop-title">标题</label>
@@ -205,6 +211,27 @@ function parseFrontmatter(md: string): string[]
           />
         </div>
 
+        <div class="import__field import__field--desc import__field--tags">
+          <label class="import__label" for="prop-desc">描述</label>
+          <input
+            id="prop-desc"
+            v-model="description"
+            class="import__input"
+            type="text"
+            placeholder="简短描述"
+          />
+        </div>
+
+        <div class="import__field">
+          <label class="import__label">&nbsp;</label>
+          <label class="import__btn-doc" for="import-file-input">
+            导入文档
+          </label>
+        </div>
+      </div>
+
+      <!-- 第二行：类型 / 标签 / 完成导入 -->
+      <div class="import__bar-row">
         <div class="import__field">
           <label class="import__label" for="prop-type">类型</label>
           <input
@@ -225,13 +252,6 @@ function parseFrontmatter(md: string): string[]
             type="text"
             placeholder="逗号分隔"
           />
-        </div>
-
-        <div class="import__field">
-          <label class="import__label">&nbsp;</label>
-          <label class="import__btn-doc" for="import-file-input">
-            导入文档
-          </label>
         </div>
 
         <div class="import__field">

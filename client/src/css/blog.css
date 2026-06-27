@@ -360,7 +360,7 @@
   font-size: 0.12rem;
   color: var(--card-tag-text);
   background-color: var(--card-tag-bg);
-  border-radius: 0.12rem;
+  border-radius: 0.04rem;
   line-height: 1.6;
   letter-spacing: 0.01em;
 }

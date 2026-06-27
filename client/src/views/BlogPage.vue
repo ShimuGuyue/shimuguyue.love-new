@@ -9,6 +9,8 @@ import '../css/blog.css'
 interface Article {
   id: number
   title: string
+  description: string
+  time: string
   category: string
   tags: string[]
 }
@@ -171,6 +173,7 @@ const filteredArticles = computed<Article[]>(() => {
     result = result.filter(
       (a) =>
         a.title.toLowerCase().includes(q) ||
+        a.description.toLowerCase().includes(q) ||
         a.category.toLowerCase().includes(q) ||
         a.tags.some((t) => t.toLowerCase().includes(q)),
     )
@@ -288,6 +291,10 @@ const availableTags = computed<string[]>(() => {
           class="blog__card"
         >
           <h2 class="blog__card-title">{{ article.title }}</h2>
+          <p
+            v-if="article.description"
+            class="blog__card-desc"
+          >{{ article.description }}</p>
           <div class="blog__card-meta">
             <span class="blog__card-category">{{ article.category }}</span>
             <span
@@ -298,6 +305,11 @@ const availableTags = computed<string[]>(() => {
               {{ tag }}
             </span>
           </div>
+          <time
+            v-if="article.time"
+            class="blog__card-time"
+            :datetime="article.time"
+          >{{ article.time }}</time>
         </RouterLink>
       </template>
 

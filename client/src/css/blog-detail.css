@@ -97,6 +97,13 @@
     color 300ms;
 }
 
+.blog-detail__date {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.13rem;
+  color: var(--card-time-text);
+}
+
 /*
 ==================================================
    加载中 / 出错

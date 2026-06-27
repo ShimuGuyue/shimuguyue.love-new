@@ -170,10 +170,11 @@ std::string extract_body(const std::string& json)
 
 std::string handle_blog_import(ConnectionPool& pool, const std::string& body)
 {
-    std::string title    = json_extract(body, "title");
-    std::string category = trim(json_extract(body, "category"));
-    std::string tags_str = json_extract(body, "tags");
-    std::string content  = unescape(extract_body(body));
+    std::string title       = json_extract(body, "title");
+    std::string category    = trim(json_extract(body, "category"));
+    std::string tags_str    = json_extract(body, "tags");
+    std::string description = json_extract(body, "description");
+    std::string content     = unescape(extract_body(body));
 
     if (title.empty() || content.empty())
         return build_response(400,
@@ -219,6 +220,7 @@ std::string handle_blog_import(ConnectionPool& pool, const std::string& body)
 
         out << "---\n"
             << "categorie: " << category << "\n"
+            << "description: " << description << "\n"
             << "tags: [";
         for (std::size_t i = 0; i < tag_list.size(); ++i)
         {
@@ -249,9 +251,9 @@ std::string handle_blog_import(ConnectionPool& pool, const std::string& body)
 
         // INSERT 文章
         pqxx::result blog_res = tx->exec(
-            "INSERT INTO blogs (title, category_id) VALUES ($1, $2) "
+            "INSERT INTO blogs (title, category_id, description) VALUES ($1, $2, $3) "
             "RETURNING id",
-            pqxx::params(title, category_id));
+            pqxx::params(title, category_id, description));
         int blog_id = blog_res[0]["id"].as<int>();
 
         // UPSERT 标签 + 关联

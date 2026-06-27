@@ -130,9 +130,8 @@ std::string handle_blog_list(ConnectionPool& pool)
 
     try
     {
-        // 查询所有博客，按 id 降序（新博客在前）
         pqxx::result blog_rows = tx->exec(
-            "SELECT b.id, b.title, c.name AS category "
+            "SELECT b.id, b.title, b.description, b.time, c.name AS category "
             "FROM blogs b "
             "JOIN blog_categories c ON b.category_id = c.id "
             "ORDER BY b.id DESC");
@@ -147,8 +146,11 @@ std::string handle_blog_list(ConnectionPool& pool)
             first_blog = false;
 
             int blog_id = row["id"].as<int>();
-            std::string title    = row["title"].c_str();
-            std::string category = row["category"].c_str();
+            std::string title       = row["title"].c_str();
+            std::string category    = row["category"].c_str();
+            std::string description = row["description"].is_null() ? "" : row["description"].c_str();
+            std::string time_val    = row["time"].is_null() ? "" : row["time"].c_str();
+            if (time_val.size() > 10) time_val.resize(10);
 
             // 查询该文章的标签
             pqxx::result tag_rows = tx->exec(
@@ -161,6 +163,8 @@ std::string handle_blog_list(ConnectionPool& pool)
             json << "{\"id\":" << blog_id
                  << ",\"title\":\"" << escape_json_str(title) << '"'
                  << ",\"category\":\"" << escape_json_str(category) << '"'
+                 << ",\"description\":\"" << escape_json_str(description) << '"'
+                 << ",\"time\":\"" << escape_json_str(time_val) << '"'
                  << ",\"tags\":[";
 
             bool first_tag = true;
