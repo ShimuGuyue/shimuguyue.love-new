@@ -367,7 +367,8 @@
 /* 卡片 meta 行 — 分类 + 标签（固定两行高度） */
 .blog__card-meta {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  align-content: flex-start;
   gap: 0.08rem;
   flex-wrap: wrap;
   
