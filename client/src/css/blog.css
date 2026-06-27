@@ -73,6 +73,35 @@
   padding-bottom: 0.6rem;
 }
 
+/* 新建博客按钮 — 与导入文档同款 */
+.blog__new-bar {
+  max-width: 12rem;
+  margin: 0.4rem auto 0.16rem;
+  text-align: right;
+}
+.blog__new-btn {
+  display: inline-block;
+  padding: 0.08rem 0.2rem;
+  border: none;
+  border-radius: 0.04rem;
+  font-size: 0.14rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--nav-active), #6c5ce7);
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.blog__new-btn:hover {
+  transform: translateY(-1px);
+}
+
+.blog__new-btn:active {
+  transform: translateY(0);
+}
+
 /*
 ==================================================
   筛选器区域
@@ -132,7 +161,7 @@
   display: inline-flex;
   align-items: center;
   padding: 0.04rem 0.14rem;
-  font-size: 0.13rem;
+  font-size: 0.14rem;
   color: var(--chip-text);
   background-color: var(--chip-bg);
   border: none;
@@ -287,6 +316,7 @@
 */
 
 .blog__card {
+  
   display: flex;
   flex-direction: column;
   padding: 0.24rem;
@@ -326,21 +356,24 @@
   font-size: 0.14rem;
   color: var(--nav-text);
   line-height: 1.6;
-  /* 两行省略 */
+  /* 一行省略 */
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 1;
+  min-height: 0.22rem;
   overflow: hidden;
-  flex: 1;
 }
 
-/* 卡片 meta 行 — 分类 + 标签 + 时间 */
+/* 卡片 meta 行 — 分类 + 标签（固定两行高度） */
 .blog__card-meta {
   display: flex;
   align-items: center;
   gap: 0.08rem;
   flex-wrap: wrap;
-  margin-bottom: 0.12rem;
+  
+  height: 0.6rem;
+  margin-bottom: 0;
+  overflow: hidden;
 }
 
 .blog__card-category {
@@ -369,7 +402,7 @@
   display: block;
   font-size: 0.12rem;
   color: var(--card-time-text);
-  margin-top: auto;
+  margin: 0;
 }
 
 /*

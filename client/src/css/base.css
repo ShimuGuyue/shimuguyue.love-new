@@ -76,7 +76,7 @@ body::before {
     repeating-linear-gradient(
       to bottom,
       rgba(0, 0, 0, 0.12) 0px,
-      rgba(0, 0, 0, 0.12) 1.15px,
+      rgba(0, 0, 0, 0.12) 1.2px,
       transparent 1px,
       transparent 24px
     ),
@@ -84,7 +84,7 @@ body::before {
     repeating-linear-gradient(
       to right,
       rgba(0, 0, 0, 0.12) 0px,
-      rgba(0, 0, 0, 0.12) 1.15px,
+      rgba(0, 0, 0, 0.12) 1.2px,
       transparent 1px,
       transparent 24px
     );
@@ -103,14 +103,14 @@ body::before {
     repeating-linear-gradient(
       to bottom,
       rgba(0, 0, 0, 0.06) 0px,
-      rgba(0, 0, 0, 0.06) 1.15px,
+      rgba(0, 0, 0, 0.06) 1.2px,
       transparent 1px,
       transparent 24px
     ),
     repeating-linear-gradient(
       to right,
       rgba(0, 0, 0, 0.06) 0px,
-      rgba(0, 0, 0, 0.06) 1.15px,
+      rgba(0, 0, 0, 0.06) 1.2px,
       transparent 1px,
       transparent 24px
     );

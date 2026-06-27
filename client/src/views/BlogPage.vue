@@ -213,6 +213,11 @@ const availableTags = computed<string[]>(() => {
 
 <template>
   <main class="blog">
+    <!-- 新建按钮 -->
+    <div class="blog__new-bar">
+      <RouterLink to="/blogs/import" class="blog__new-btn">新建博客</RouterLink>
+    </div>
+
     <!-- ============================================================
     筛选器
     ============================================================ -->
@@ -291,10 +296,7 @@ const availableTags = computed<string[]>(() => {
           class="blog__card"
         >
           <h2 class="blog__card-title">{{ article.title }}</h2>
-          <p
-            v-if="article.description"
-            class="blog__card-desc"
-          >{{ article.description }}</p>
+          <p class="blog__card-desc">{{ article.description }}</p>
           <div class="blog__card-meta">
             <span class="blog__card-category">{{ article.category }}</span>
             <span
@@ -305,11 +307,7 @@ const availableTags = computed<string[]>(() => {
               {{ tag }}
             </span>
           </div>
-          <time
-            v-if="article.time"
-            class="blog__card-time"
-            :datetime="article.time"
-          >{{ article.time }}</time>
+          <time class="blog__card-time" :datetime="article.time">{{ article.time }}</time>
         </RouterLink>
       </template>
 
