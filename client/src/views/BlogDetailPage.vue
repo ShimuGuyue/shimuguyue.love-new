@@ -2,6 +2,13 @@
 import { ref, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MarkdownIt from 'markdown-it'
+import githubAlerts from 'markdown-it-github-alerts'
+import texmath from 'markdown-it-texmath'
+import taskLists from 'markdown-it-task-lists'
+import katex from 'katex'
+import hljs from 'highlight.js'
+import 'katex/dist/katex.min.css'
+import 'highlight.js/styles/github.css'
 import '../css/blog-detail.css'
 import '../css/markdown.css'
 
@@ -9,6 +16,27 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
+  highlight(str: string, lang: string): string {
+    if (lang && hljs.getLanguage(lang)) {
+      try {
+        return hljs.highlight(str, { language: lang }).value
+      } catch {
+        /* fall through */
+      }
+    }
+    return ''
+  },
+})
+
+md.use(githubAlerts)
+md.use(taskLists)
+md.use(texmath, {
+  engine: katex,
+  delimiters: 'dollars',
+  katexOptions: {
+    throwOnError: false,
+    displayMode: false,
+  },
 })
 
 const route = useRoute()
@@ -133,6 +161,20 @@ watch(
 
     <!-- 文章内容 -->
     <template v-else-if="article">
+      <header class="blog-detail__header">
+        <h1 class="blog-detail__title">{{ article.title }}</h1>
+        <div class="blog-detail__meta">
+          <span class="blog-detail__category">{{ article.category }}</span>
+          <span
+            v-for="tag in article.tags"
+            :key="tag"
+            class="blog-detail__tag"
+          >
+            {{ tag }}
+          </span>
+        </div>
+      </header>
+
       <div
         v-if="html"
         class="blog-detail__body markdown-body"
