@@ -20,6 +20,7 @@ interface Frontmatter
 const file = ref<File | null>(null)
 const fileContent = ref('')
 const editableBody = ref('')
+const title = ref('')
 const category = ref('')
 const tags = ref('')
 const message = ref('')
@@ -34,7 +35,7 @@ const auth = useAuthStore()
 
 const hasContent = computed(() => editableBody.value.length > 0)
 
-const canFinish = computed(() => hasContent.value && auth.isSuperAdmin)
+const canFinish = computed(() => title.value.trim() && hasContent.value && auth.isSuperAdmin)
 
 const tagList = computed<string[]>(() =>
 {
@@ -89,6 +90,34 @@ function showToast(msg: string, error: boolean)
   toastTimer = setTimeout(() => { message.value = '' }, 3000)
 }
 
+async function handleFinish()
+{
+  const body = JSON.stringify({
+    title: title.value.trim(),
+    category: category.value.trim(),
+    tags: tags.value,
+    body: editableBody.value,
+  })
+
+  try
+  {
+    const res = await fetch('/api/blogs/import', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    })
+    const data = await res.json()
+    if (data.success)
+      showToast('导入成功', false)
+    else
+      showToast(data.message || '导入失败', true)
+  }
+  catch
+  {
+    showToast('网络错误', true)
+  }
+}
+
 /** 统一换行符为 \n */
 function normalizeNl(s: string): string
 {
@@ -128,6 +157,9 @@ function parseFrontmatter(md: string): string[]
     fm[key] = val
   }
 
+  // 标题
+  if (fm.title) title.value = fm.title
+
   // 兼容 category / categorie / categories 等变体拼写
   const cat = fm.category ?? fm.categorie ?? fm.categories
   if (cat) category.value = cat
@@ -163,6 +195,17 @@ function parseFrontmatter(md: string): string[]
     <div class="import__bar">
       <div class="import__bar-row">
         <div class="import__field">
+          <label class="import__label" for="prop-title">标题</label>
+          <input
+            id="prop-title"
+            v-model="title"
+            class="import__input"
+            type="text"
+            placeholder="文章标题"
+          />
+        </div>
+
+        <div class="import__field">
           <label class="import__label" for="prop-type">类型</label>
           <input
             id="prop-type"
@@ -196,6 +239,7 @@ function parseFrontmatter(md: string): string[]
           <button
             class="import__btn-finish"
             :disabled="!canFinish"
+            @click="handleFinish"
           >
             {{ auth.isSuperAdmin ? '完成导入' : '无操作权限' }}
           </button>

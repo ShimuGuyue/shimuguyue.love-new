@@ -1,6 +1,12 @@
 /**
  * @file server.cpp
  * @brief HTTP 服务器实现
+ *
+ * @details
+ * 基于 Berkeley socket 的单线程阻塞式 HTTP 服务器：
+ * - 创建 TCP socket，绑定端口，监听连接
+ * - 每次 accept 后解析请求 → 路由分发 → 发送响应 → 关闭连接
+ * - 生命周期由 Server 类管理（RAII）
  */
 
 #include "http/server.h"

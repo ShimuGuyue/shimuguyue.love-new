@@ -47,6 +47,8 @@ add_executable(server
     src/db/connection_pool.cpp
     src/http/protocol.cpp
     src/http/handlers.cpp
+    src/http/blog_import.cpp
+    src/http/login_handler.cpp
     src/http/server.cpp
 )
 

@@ -1,6 +1,12 @@
 /**
  * @file protocol.cpp
  * @brief HTTP 协议层实现
+ *
+ * @details
+ * 简易 HTTP/1.1 协议实现，仅支持本项目所需的 POST 请求处理：
+ * - 请求解析：从 socket 逐行读取请求行和头部，按 Content-Length 读取正文
+ * - 响应构建：生成 JSON 响应（含 CORS 头 Access-Control-Allow-Origin）
+ * - JSON 提取：从扁平的 JSON 字符串中按字段名提取引号内字符串值
  */
 
 #include "http/protocol.h"
@@ -15,13 +21,20 @@ namespace http
 
 /*
 ==================================================
-   socket 读取
+  socket I/O — 按行 / 按字节读取
 ==================================================
 */
 
 namespace
 {
 
+/**
+ * @brief 从 socket 读取一行（支持 \\r\\n 和裸 \\n）
+ *
+ * @param fd   socket 描述符
+ * @param line 输出行内容（不含换行符）
+ * @return true 读到行；false 连接关闭或出错
+ */
 bool read_line(int fd, std::string& line)
 {
     line.clear();
@@ -44,6 +57,13 @@ bool read_line(int fd, std::string& line)
     }
 }
 
+/**
+ * @brief 从 socket 读取指定字节数
+ *
+ * @param fd  socket 描述符
+ * @param len 期望读取字节数
+ * @return 读取到的字符串（可能短于 len）
+ */
 std::string read_bytes(int fd, std::size_t len)
 {
     std::string result(len, '\0');
@@ -63,7 +83,7 @@ std::string read_bytes(int fd, std::size_t len)
 
 /*
 ==================================================
-   请求解析
+  请求解析
 ==================================================
 */
 
@@ -108,7 +128,7 @@ Request parse_request(int fd)
 
 /*
 ==================================================
-   响应构建
+  响应构建
 ==================================================
 */
 
@@ -120,6 +140,7 @@ std::string build_response(int status_code, const std::string& body)
     case 200: status_text = "OK"; break;
     case 400: status_text = "Bad Request"; break;
     case 401: status_text = "Unauthorized"; break;
+    case 403: status_text = "Forbidden"; break;
     case 404: status_text = "Not Found"; break;
     case 500: status_text = "Internal Server Error"; break;
     default:  status_text = "Unknown"; break;
@@ -138,7 +159,7 @@ std::string build_response(int status_code, const std::string& body)
 
 /*
 ==================================================
-   JSON 提取
+  JSON 字段提取
 ==================================================
 */
 
