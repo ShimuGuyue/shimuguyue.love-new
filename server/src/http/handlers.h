@@ -1,6 +1,6 @@
 /**
  * @file handlers.h
- * @brief 登录处理函数 + 路由分发
+ * @brief HTTP 路由分发
  */
 
 #pragma once
@@ -15,29 +15,18 @@ namespace http
 {
 
 /**
- * @brief 处理密钥登录
- *
- * @details 遍历 users 表，用 Argon2id 验证密钥。
- *
- * @param pool 数据库连接池
- * @param body 请求体 JSON
- * @return JSON 响应字符串
- */
-std::string handle_key_login(ConnectionPool& pool, const std::string& body);
-
-/**
- * @brief 处理账号密码登录
- *
- * @details 按 username 索引查找，用 Argon2id 验证密码。
- *
- * @param pool 数据库连接池
- * @param body 请求体 JSON
- * @return JSON 响应字符串
- */
-std::string handle_account_login(ConnectionPool& pool, const std::string& body);
-
-/**
  * @brief 路由分发
+ *
+ * @details 根据请求方法和路径，派发到对应的处理函数。
+ *
+ * 路由表：
+ * | 方法 | 路径                  | 处理函数                  |
+ * |------|----------------------|--------------------------|
+ * | GET  | /api/blogs           | handle_blog_list         |
+ * | GET  | /api/blog/{title}    | handle_blog_article      |
+ * | POST | /api/login/key       | handle_key_login         |
+ * | POST | /api/login/account   | handle_account_login     |
+ * | POST | /api/blogs/import    | handle_blog_import       |
  *
  * @param pool 数据库连接池
  * @param req  HTTP 请求

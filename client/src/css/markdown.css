@@ -1,0 +1,534 @@
+/*
+==================================================
+   Markdown 渲染样式 — 粉色主题
+==================================================
+*/
+
+/*
+==================================================
+   主题变量
+==================================================
+*/
+
+:root {
+  /* 粉色系 */
+  --md-pink-soft:         #FF9EC8;
+  --md-pink-hot:          #FF77CC;
+  --md-pink-light:        #ffaaff;
+  --md-pink-bright:       #FFEEF8;
+  --md-pink-peach:        #F39ACD;
+  --md-pink-tender:       #FFF0F5;
+  --md-purple-herrscher:  #6D6AA7;
+
+  /* 字号 (rem 基准 100px) */
+  --md-fontsize-h1: 0.28rem;
+  --md-fontsize-h2: 0.24rem;
+  --md-fontsize-h3: 0.20rem;
+  --md-fontsize-h4: 0.18rem;
+  --md-fontsize-h5: 0.16rem;
+  --md-fontsize-h6: 0.14rem;
+  --md-fontsize-normal: 0.16rem;
+  --md-fontsize-small:  0.14rem;
+
+  /* 字体 */
+  --md-font-body: 'Noto Serif SC', 'Source Han Serif SC', STSong, SimSun, '宋体', serif;
+  --md-font-emphasis: 'Ma Shan Zheng', STXingkai, '华文行楷', 'KaiTi', '楷体', cursive;
+  --md-font-code: 'Cascadia Code', 'Fira Code', 'JetBrains Mono', Consolas, 'Courier New', monospace;
+
+  /* 块引用 */
+  --md-blockquote-border: 4px solid var(--md-pink-light);
+  --md-blockquote-padding: 0.15rem 0.3rem 0.15rem 0.2rem;
+  --md-blockquote-bg: rgba(255, 158, 200, 0.12);
+
+  /* 代码块 / 表格 */
+  --md-code-bg: #f6f8fa;
+  --md-table-stripe: rgba(255, 158, 200, 0.12);
+
+  /* GitHub 风格警告框 */
+  --color-note:      #0969da;
+  --color-tip:       #1a7f37;
+  --color-warning:   #9a6700;
+  --color-caution:   #d1242f;
+  --color-important: #8250df;
+}
+
+[data-theme='dark'] {
+  --md-pink-soft:         #ff8fbf;
+  --md-pink-hot:          #ff66b2;
+  --md-pink-light:        #e890ff;
+  --md-pink-bright:       #2d1b30;
+  --md-pink-peach:        #ff99bb;
+  --md-pink-tender:       #1f1525;
+  --md-purple-herrscher:  #b8a0e0;
+
+  /* GitHub 风格警告框 */
+  --color-note:      #58a6ff;
+  --color-tip:       #3fb950;
+  --color-warning:   #d29922;
+  --color-caution:   #f85149;
+  --color-important: #bc8cff;
+
+  /* 块引用 */
+  --md-blockquote-border: 4px solid var(--md-pink-light);
+  --md-blockquote-bg: rgba(255, 143, 191, 0.08);
+
+  /* 代码块 / 表格 */
+  --md-code-bg: #161b22;
+  --md-table-stripe: rgba(255, 143, 191, 0.08);
+}
+
+/*
+==================================================
+   正文容器
+==================================================
+*/
+
+.markdown-body {
+  font-size: var(--md-fontsize-normal);
+  line-height: 1.85;
+  color: var(--text);
+  word-break: break-word;
+  transition: color 300ms;
+}
+
+/*
+==================================================
+   标题
+==================================================
+*/
+
+.markdown-body h1,
+.markdown-body h2,
+.markdown-body h3,
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  color: var(--md-pink-soft);
+  font-weight: 600;
+  line-height: 1.4;
+  transition: color 300ms;
+}
+
+.markdown-body h1 { font-size: var(--md-fontsize-h1); margin: 0.36rem 0 0.16rem; }
+.markdown-body h2 { font-size: var(--md-fontsize-h2); margin: 0.32rem 0 0.14rem; }
+.markdown-body h3 { font-size: var(--md-fontsize-h3); margin: 0.28rem 0 0.12rem; }
+.markdown-body h4 { font-size: var(--md-fontsize-h4); margin: 0.24rem 0 0.12rem; }
+.markdown-body h5 { font-size: var(--md-fontsize-h5); margin: 0.20rem 0 0.10rem; }
+.markdown-body h6 { font-size: var(--md-fontsize-h6); margin: 0.16rem 0 0.10rem; }
+
+/* 标题装饰符号 */
+.markdown-body h1::before { content: '❀ '; }
+.markdown-body h1::after  { content: ' ❀'; }
+.markdown-body h2::before { content: '➳ '; }
+.markdown-body h2::after  { content: ' ➳'; }
+.markdown-body h3::before { content: '♥ ';  }
+.markdown-body h3::after  { content: ' ♥';  }
+.markdown-body h4::before { content: '♪ ';  }
+.markdown-body h4::after  { content: ' ♪';  }
+
+/*
+==================================================
+   段落 / 列表 / 行内代码 — 粗仿宋
+==================================================
+*/
+
+.markdown-body p,
+.markdown-body ul,
+.markdown-body ol,
+.markdown-body :not(pre) > code {
+  font-size: var(--md-fontsize-normal);
+  font-family: var(--md-font-body);
+  font-weight: bold;
+}
+
+.markdown-body p {
+  margin: 0 0 0.16rem;
+}
+
+/*
+==================================================
+   强调 / 加粗 / 链接 / 删除
+==================================================
+*/
+
+/* 斜体 — 行楷 + Consolas */
+.markdown-body em {
+  font-family: var(--md-font-code), var(--md-font-emphasis);
+  font-style: normal;
+}
+
+/* 加粗 — 热粉色 */
+.markdown-body strong {
+  color: var(--md-pink-hot);
+}
+
+/* 链接 */
+.markdown-body a {
+  color: var(--md-pink-light);
+  text-decoration: none;
+  transition:
+    color 300ms,
+    opacity 150ms;
+}
+
+.markdown-body a:hover {
+  opacity: 0.8;
+}
+
+/* 删除文本 — 隐藏效果，悬停揭示 */
+.markdown-body del,
+.markdown-body s {
+  background-color: var(--md-purple-herrscher);
+  color: var(--md-purple-herrscher);
+  border: 1px solid var(--md-purple-herrscher);
+  border-radius: 3px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.markdown-body del:hover,
+.markdown-body s:hover {
+  background-color: var(--md-pink-bright);
+  color: var(--md-pink-soft);
+  border: 1px dashed var(--md-pink-soft);
+}
+
+/*
+==================================================
+   引用块
+==================================================
+*/
+
+.markdown-body blockquote {
+  border-left: var(--md-blockquote-border);
+  padding: var(--md-blockquote-padding);
+  margin: 0.16rem 0;
+  border-radius: 0 0.06rem 0.06rem 0;
+  background-color: var(--md-blockquote-bg);
+  color: var(--nav-text);
+  transition:
+    border-color 300ms,
+    background-color 300ms;
+}
+
+.markdown-body blockquote p,
+.markdown-body blockquote strong {
+  font-size: var(--md-fontsize-small);
+  font-weight: normal;
+}
+
+.markdown-body blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/*
+==================================================
+   列表
+==================================================
+*/
+
+.markdown-body ul,
+.markdown-body ol {
+  list-style: none;
+  padding-left: 0;
+}
+
+.markdown-body li {
+  position: relative;
+  padding-left: calc(2 * var(--md-fontsize-normal));
+}
+
+/* 无序列表 — ❀ */
+.markdown-body ul > li::before {
+  content: '❀';
+  position: absolute;
+  left: 0;
+  color: var(--md-pink-soft);
+}
+
+/* 无序嵌套 — ➳ */
+.markdown-body ul ul li::before,
+.markdown-body ul ol li::before,
+.markdown-body ol ul li::before,
+.markdown-body ol ol li::before {
+  content: '➳';
+  color: var(--md-pink-soft);
+}
+
+/* 有序列表 — 计数器 */
+.markdown-body ol {
+  counter-reset: md-ol-level1;
+}
+
+.markdown-body ol > li::before {
+  counter-increment: md-ol-level1;
+  content: counter(md-ol-level1) '.';
+  position: absolute;
+  left: 0;
+  color: var(--md-pink-soft);
+}
+
+/* 有序嵌套 — 小写罗马数字 */
+.markdown-body ul ol,
+.markdown-body ol ol {
+  counter-reset: md-ol-level2;
+}
+
+.markdown-body ul ol > li::before,
+.markdown-body ol ol > li::before {
+  counter-increment: md-ol-level2;
+  content: counter(md-ol-level2, lower-roman) '.';
+}
+
+/*
+==================================================
+   TODO 复选框
+==================================================
+*/
+
+/* 包含复选框的列表项 */
+.markdown-body .task-list-item {
+  position: relative;
+  padding-left: 0;
+}
+
+.markdown-body .task-list-item::before {
+  content: none;
+}
+
+.markdown-body .task-list-item-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 0.18rem;
+  height: 0.18rem;
+  margin: 0 0.08rem 0 0;
+  border: 2px solid var(--md-pink-peach);
+  border-radius: 0.03rem;
+  background-color: transparent;
+  cursor: pointer;
+  vertical-align: text-bottom;
+  transition:
+    border-color 150ms;
+}
+
+.markdown-body .task-list-item-checkbox:checked {
+  border-color: var(--md-pink-soft);
+}
+
+/* 选中时 ♪ 放入框内 */
+.markdown-body .task-list-item:has(.task-list-item-checkbox:checked)::before {
+  content: '♪';
+  position: absolute;
+  left: -0.01rem;
+  top: -0.05rem;
+  font-size: 0.28rem;
+  line-height: 1;
+  color: var(--md-pink-soft);
+  pointer-events: none;
+}
+
+/* 已完成任务 — 变灰 */
+.markdown-body .task-list-item:has(.task-list-item-checkbox:checked) {
+  color: var(--nav-text);
+}
+
+/*
+==================================================
+   行内代码
+==================================================
+*/
+
+.markdown-body :not(pre) > code {
+  color: var(--md-pink-hot);
+  background-color: var(--md-blockquote-bg);
+  padding: 0.02rem 0.06rem;
+  border-radius: 0.04rem;
+  word-wrap: break-word;
+  word-break: break-all;
+  font-family: var(--md-font-body);
+  font-weight: bold;
+}
+
+/*
+==================================================
+   代码块
+==================================================
+*/
+
+.markdown-body pre {
+  margin: 0.16rem 0;
+  padding: 0.16rem 0.2rem;
+  background-color: var(--md-code-bg);
+  border-radius: 0.08rem;
+  overflow-x: auto;
+  transition: background-color 300ms;
+}
+
+.markdown-body pre code {
+  padding: 0;
+  font-size: var(--md-fontsize-small);
+  font-weight: normal;
+  background-color: transparent;
+  color: inherit;
+  word-break: normal;
+}
+
+/*
+==================================================
+   分割线
+==================================================
+*/
+
+.markdown-body hr {
+  margin: 0.32rem 0;
+  border: none;
+  border-top: 1px solid var(--md-pink-peach);
+  transition: border-color 300ms;
+}
+
+/*
+==================================================
+   表格
+==================================================
+*/
+
+.markdown-body table {
+  width: 100%;
+  margin: 0.16rem 0;
+  border-collapse: collapse;
+  font-size: var(--md-fontsize-small);
+}
+
+.markdown-body th,
+.markdown-body td {
+  padding: 0.08rem 0.12rem;
+  border: 1px solid var(--md-pink-peach);
+  text-align: left;
+  transition: border-color 300ms;
+}
+
+.markdown-body th {
+  font-weight: 600;
+  background-color: var(--md-table-stripe);
+}
+
+.markdown-body tr:nth-child(even) {
+  background-color: var(--md-table-stripe);
+}
+
+/*
+==================================================
+   图片
+==================================================
+*/
+
+.markdown-body p img {
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 4px;
+}
+
+.markdown-body img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.06rem;
+  margin: 0.12rem 0;
+}
+
+/*
+==================================================
+   GitHub 风格警告框
+==================================================
+*/
+
+.markdown-body .markdown-alert {
+  padding: 0.16rem 0.24rem;
+  margin-bottom: 0.16rem;
+  color: inherit;
+  border-left: 0.25em solid #888;
+  border-radius: 0 0.06rem 0.06rem 0;
+}
+
+.markdown-body .markdown-alert > :first-child {
+  margin-top: 0;
+}
+
+.markdown-body .markdown-alert > :last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body .markdown-alert .markdown-alert-title {
+  display: flex;
+  font-weight: 600;
+  align-items: center;
+  line-height: 1;
+  margin-bottom: 0.08rem;
+  font-size: var(--md-fontsize-small);
+}
+
+.markdown-body .markdown-alert .markdown-alert-title .octicon {
+  margin-right: 0.06rem;
+  display: inline-block;
+  overflow: visible !important;
+  vertical-align: text-bottom;
+  fill: currentColor;
+}
+
+.markdown-body .markdown-alert-note {
+  border-left-color: var(--color-note);
+  background-color: color-mix(in srgb, var(--color-note) 10%, transparent);
+}
+
+.markdown-body .markdown-alert-note .markdown-alert-title {
+  color: var(--color-note);
+}
+
+.markdown-body .markdown-alert-tip {
+  border-left-color: var(--color-tip);
+  background-color: color-mix(in srgb, var(--color-tip) 10%, transparent);
+}
+
+.markdown-body .markdown-alert-tip .markdown-alert-title {
+  color: var(--color-tip);
+}
+
+.markdown-body .markdown-alert-warning {
+  border-left-color: var(--color-warning);
+  background-color: color-mix(in srgb, var(--color-warning) 10%, transparent);
+}
+
+.markdown-body .markdown-alert-warning .markdown-alert-title {
+  color: var(--color-warning);
+}
+
+.markdown-body .markdown-alert-caution {
+  border-left-color: var(--color-caution);
+  background-color: color-mix(in srgb, var(--color-caution) 10%, transparent);
+}
+
+.markdown-body .markdown-alert-caution .markdown-alert-title {
+  color: var(--color-caution);
+}
+
+.markdown-body .markdown-alert-important {
+  border-left-color: var(--color-important);
+  background-color: color-mix(in srgb, var(--color-important) 10%, transparent);
+}
+
+.markdown-body .markdown-alert-important .markdown-alert-title {
+  color: var(--color-important);
+}
+
+/*
+==================================================
+   代码高亮颜色覆盖
+==================================================
+*/
+
+.markdown-body .hljs-string {
+  color: #c7254e;
+}
+
+.markdown-body .hljs-number {
+  color: #6f42c1;
+}

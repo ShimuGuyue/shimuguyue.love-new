@@ -1,0 +1,166 @@
+/*
+==================================================
+   博客详情页 — 页面布局
+==================================================
+*/
+
+/*
+==================================================
+   主题变量
+==================================================
+*/
+
+:root {
+  --detail-max-width: 8.6rem;
+  --detail-header-border: #e6e7eb;
+  --detail-h1-color: #2b303b;
+  --detail-category-bg: #ebf0ff;
+  --detail-category-text: #3778e5;
+  --detail-tag-bg: #f0f1f4;
+  --detail-tag-text: #888;
+}
+
+[data-theme='dark'] {
+  --detail-header-border: #2a2a4a;
+  --detail-h1-color: #d0d0d8;
+  --detail-category-bg: #1e3350;
+  --detail-category-text: #5db8d8;
+  --detail-tag-bg: #2a2a4a;
+  --detail-tag-text: #7a7a9a;
+}
+
+/*
+==================================================
+   页面容器
+==================================================
+*/
+
+.blog-detail {
+  max-width: var(--detail-max-width);
+  margin: 0 auto;
+  padding: 0.8rem 0.24rem 0.6rem;
+}
+
+/*
+==================================================
+   文章头
+==================================================
+*/
+
+.blog-detail__header {
+  margin-bottom: 0.4rem;
+  padding-bottom: 0.24rem;
+  border-bottom: 1px solid var(--detail-header-border);
+  transition: border-color 300ms;
+}
+
+.blog-detail__title {
+  font-size: 0.32rem;
+  font-weight: 700;
+  color: var(--detail-h1-color);
+  line-height: 1.35;
+  margin: 0 0 0.16rem;
+  transition: color 300ms;
+}
+
+.blog-detail__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.08rem;
+  flex-wrap: wrap;
+}
+
+.blog-detail__category {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.02rem 0.1rem;
+  font-size: 0.12rem;
+  font-weight: 500;
+  color: var(--detail-category-text);
+  background-color: var(--detail-category-bg);
+  border-radius: 0.04rem;
+  transition:
+    background-color 300ms,
+    color 300ms;
+}
+
+.blog-detail__tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.02rem 0.08rem;
+  font-size: 0.11rem;
+  color: var(--detail-tag-text);
+  background-color: var(--detail-tag-bg);
+  border-radius: 0.04rem;
+  transition:
+    background-color 300ms,
+    color 300ms;
+}
+
+.blog-detail__date {
+  display: block;
+  margin-top: 0.12rem;
+  font-size: 0.13rem;
+  color: var(--card-time-text);
+}
+
+/*
+==================================================
+   加载中 / 出错
+==================================================
+*/
+
+.blog-detail__loading,
+.blog-detail__error {
+  text-align: center;
+  padding: 1rem 0.24rem;
+  color: var(--nav-text);
+  font-size: 0.16rem;
+}
+
+.blog-detail__error h2 {
+  font-size: 0.24rem;
+  color: var(--detail-h1-color);
+  margin: 0 0 0.12rem;
+}
+
+/*
+ ==================================================
+    文章正文容器 — 毛玻璃
+ ==================================================
+ */
+
+ .blog-detail__body {
+   margin-top: 0.24rem;
+   border-radius: 0.12rem;
+   background: rgba(255, 255, 255, 0.08);
+   border: 1px solid rgba(255, 255, 255, 0.18);
+   backdrop-filter: blur(2px) saturate(100%);
+   -webkit-backdrop-filter: blur(2px) saturate(100%);
+   box-shadow: 0 0.08rem 0.32rem rgba(0, 0, 0, 0.08);
+   overflow: hidden;
+   padding: 0.32rem;
+   transition:
+     background 300ms,
+     border-color 300ms,
+     box-shadow 300ms;
+ }
+
+ [data-theme='dark'] .blog-detail__body {
+   background: rgba(22, 28, 50, 0.15);
+   border-color: rgba(255, 255, 255, 0.05);
+   box-shadow: 0 0.08rem 0.32rem rgba(0, 0, 0, 0.35);
+ }
+
+/*
+==================================================
+   空内容提示
+==================================================
+*/
+
+.blog-detail__empty-body {
+  text-align: center;
+  padding: 0.8rem 0.24rem;
+  font-size: 0.15rem;
+  color: var(--card-time-text);
+}
