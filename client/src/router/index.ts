@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import HomePage from '../views/HomePage.vue'
 import BlogPage from '../views/BlogPage.vue'
+import BlogDetailPage from '../views/BlogDetailPage.vue'
 import BlogImportPage from '../views/BlogImportPage.vue'
 import ProjectsPage from '../views/ProjectsPage.vue'
 import FavoritesPage from '../views/FavoritesPage.vue'
@@ -27,6 +28,11 @@ const router = createRouter({
       path: '/blogs/import',
       name: 'blog-import',
       component: BlogImportPage,
+    },
+    {
+      path: '/blog/:title',
+      name: 'blog-detail',
+      component: BlogDetailPage,
     },
     {
       path: '/projects',

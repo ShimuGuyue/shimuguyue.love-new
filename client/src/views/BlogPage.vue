@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import '../css/blog.css'
 
 /* ========================================================================
@@ -9,13 +9,33 @@ import '../css/blog.css'
 interface Article {
   id: number
   title: string
-  description: string
   category: string
   tags: string[]
-  date: string
 }
 
 const articles = ref<Article[]>([])
+const loading = ref(true)
+const error = ref('')
+
+/* ========================================================================
+   数据获取
+   ======================================================================== */
+
+onMounted(async () => {
+  try {
+    const res = await fetch('/api/blogs')
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    if (!data.success) throw new Error(data.message ?? '未知错误')
+    articles.value = data.blogs as Article[]
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : String(e)
+    error.value = `加载文章失败: ${msg}`
+    console.error('[BlogPage]', msg)
+  } finally {
+    loading.value = false
+  }
+})
 
 /* ========================================================================
    筛选选项
@@ -151,7 +171,8 @@ const filteredArticles = computed<Article[]>(() => {
     result = result.filter(
       (a) =>
         a.title.toLowerCase().includes(q) ||
-        a.description.toLowerCase().includes(q),
+        a.category.toLowerCase().includes(q) ||
+        a.tags.some((t) => t.toLowerCase().includes(q)),
     )
   }
 
@@ -249,22 +270,26 @@ const availableTags = computed<string[]>(() => {
     </section>
 
     <!-- ============================================================
-    卡片网格
-    ============================================================ -->
+     卡片网格
+     ============================================================ -->
     <section class="blog__grid">
-      <template v-if="filteredArticles.length > 0">
+      <!-- 加载中 -->
+      <p v-if="loading" class="blog__empty">正在加载文章…</p>
+
+      <!-- 加载出错 -->
+      <p v-else-if="error" class="blog__empty blog__empty--error">{{ error }}</p>
+
+      <!-- 有结果 -->
+      <template v-else-if="filteredArticles.length > 0">
         <RouterLink
           v-for="article in filteredArticles"
           :key="article.id"
-          :to="`/blogs/${article.id}`"
+          :to="`/blog/${encodeURIComponent(article.title)}`"
           class="blog__card"
         >
           <h2 class="blog__card-title">{{ article.title }}</h2>
-          <p class="blog__card-desc">{{ article.description }}</p>
           <div class="blog__card-meta">
-            <!-- 分类 -->
             <span class="blog__card-category">{{ article.category }}</span>
-            <!-- 标签 -->
             <span
               v-for="tag in article.tags"
               :key="tag"
@@ -273,11 +298,10 @@ const availableTags = computed<string[]>(() => {
               {{ tag }}
             </span>
           </div>
-          <time class="blog__card-time" :datetime="article.date">
-            {{ article.date }}
-          </time>
         </RouterLink>
       </template>
+
+      <!-- 无结果 -->
       <p v-else class="blog__empty">没有找到匹配的文章</p>
     </section>
   </main>
