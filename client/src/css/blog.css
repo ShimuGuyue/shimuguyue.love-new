@@ -267,13 +267,17 @@
   }
 }
 
-/* 空结果提示 */
+/* 空结果 / 加载 / 错误提示 */
 .blog__empty {
   grid-column: 1 / -1;
   text-align: center;
   padding: 0.8rem 0;
   font-size: 0.16rem;
   color: var(--card-time-text);
+}
+
+.blog__empty--error {
+  color: #e03c8a;
 }
 
 /*
