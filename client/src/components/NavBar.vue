@@ -17,6 +17,17 @@ const { toggle } = theme
         maskImage: `url(https://cdn.jsdelivr.net/npm/heroicons@2.1.1/24/solid/${isDark ? 'moon' : 'sun'}.svg)`,
       }"
     ></button>
+
+    <div class="navbar-spacer"></div>
+
+    <div class="header__social">
+      <a
+        href="https://github.com/ShimuGuyue"
+        target="_blank"
+        class="header__social-icon"
+        style="mask-image: url(https://cdn.jsdelivr.net/npm/simple-icons@11.15.0/icons/github.svg)"
+      ></a>
+    </div>
   </nav>
 </template>
 
@@ -57,6 +68,34 @@ const { toggle } = theme
 }
 
 .header__theme-btn:hover {
+  background-color: var(--color-text);
+}
+
+.navbar-spacer {
+  flex: 1;
+}
+
+.header__social {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header__social-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  background-color: var(--color-text-secondary);
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  transition: background-color 0.3s;
+}
+
+.header__social-icon:hover {
   background-color: var(--color-text);
 }
 </style>
