@@ -29,6 +29,7 @@ const { toggle } = theme
   background-color: var(--color-nav-bg);
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
 .navbar-logo {
@@ -36,6 +37,7 @@ const { toggle } = theme
   font-weight: 700;
   color: var(--color-text);
   text-decoration: none;
+  transition: color 0.3s;
 }
 
 .header__theme-btn {
@@ -51,7 +53,7 @@ const { toggle } = theme
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color 0.3s;
 }
 
 .header__theme-btn:hover {
