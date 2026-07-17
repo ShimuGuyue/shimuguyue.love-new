@@ -2,6 +2,31 @@ cmake_minimum_required(VERSION 3.20)
 
 project(server)
 
+# C++23 版本标准，强制使用版本标准，禁用编译器独有拓展
+set(CMAKE_CXX_STANDARD 23)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# vcpkg 依赖
+find_package(libpqxx CONFIG REQUIRED)
+
+# 源文件
 add_executable(${PROJECT_NAME}
     main.cpp
+    src/db/connection.cpp
 )
+
+# 头文件
+target_include_directories(${PROJECT_NAME}
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
+
+# 链接文件
+target_link_libraries(${PROJECT_NAME}
+    PRIVATE
+        libpqxx::pqxx
+)
+
+# ---------- 安装规则 ----------
+install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION bin)
