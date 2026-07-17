@@ -9,7 +9,9 @@ const { toggle } = theme
 
 <template>
   <nav class="navbar">
+    <!-- Logo -->
     <RouterLink to="/" class="navbar-logo">石木古月</RouterLink>
+    <!-- 主题切换按钮 -->
     <button
       class="header__theme-btn"
       @click="toggle"
@@ -20,6 +22,17 @@ const { toggle } = theme
 
     <div class="navbar-spacer"></div>
 
+    <!-- 导航栏目 -->
+    <div class="header__nav">
+      <RouterLink to="/" class="header__nav-link">首页</RouterLink>
+      <RouterLink to="/blogs" class="header__nav-link">博客</RouterLink>
+      <RouterLink to="/projects" class="header__nav-link">项目</RouterLink>
+      <RouterLink to="/favorites" class="header__nav-link">收藏夹</RouterLink>
+      <RouterLink to="/about" class="header__nav-link">关于我</RouterLink>
+    </div>
+    <!-- 分割线 -->
+    <div class="header__divider"></div>
+    <!-- 个人链接 -->
     <div class="header__social">
       <a
         href="https://github.com/ShimuGuyue"
@@ -73,6 +86,36 @@ const { toggle } = theme
 
 .navbar-spacer {
   flex: 1;
+}
+
+.header__nav {
+  display: flex;
+  align-items: center;
+  gap: 80px;
+}
+
+.header__nav-link {
+  font-size: 1.125rem;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+.header__nav-link:hover {
+  color: var(--color-text);
+}
+
+.header__nav-link.router-link-active {
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.header__divider {
+  width: 1px;
+  height: 24px;
+  margin: 0 40px;
+  background-color: var(--color-border);
+  transition: background-color 0.3s;
 }
 
 .header__social {
