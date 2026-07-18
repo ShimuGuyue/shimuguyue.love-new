@@ -9,11 +9,13 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # vcpkg 依赖
 find_package(libpqxx CONFIG REQUIRED)
+find_package(unofficial-sodium CONFIG REQUIRED)
 
 # 源文件
 add_executable(${PROJECT_NAME}
     main.cpp
     src/db/connection.cpp
+    src/crypto/argon2id.cpp
 )
 
 # 头文件
@@ -26,6 +28,7 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         libpqxx::pqxx
+        unofficial-sodium::sodium
 )
 
 # ---------- 安装规则 ----------
