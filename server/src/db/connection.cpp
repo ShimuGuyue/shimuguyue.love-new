@@ -22,7 +22,7 @@ namespace {
     const char* val{ std::getenv(key) };
     if (val == nullptr)
     {
-        /*log*/std::cerr << std::format("错误：缺少必需的环境变量 {}。", key) << std::endl;
+        /*log*/std::cerr << std::format("错误：缺少必需的环境变量 {}！", key) << std::endl;
         std::exit(1);
     }
     return val;
@@ -59,7 +59,7 @@ auto connect() -> pqxx::connection
         /*log*/std::cout << "连接至数据库失败！" << std::endl;
         exit(1);
     }
-    /*log*/std::cout << std::format("成功连接至数据库！") << std::endl;
+    /*log*/std::cout << std::format("成功连接至数据库。\n") << std::endl;
     return conn;
 }
 

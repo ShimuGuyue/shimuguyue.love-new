@@ -20,16 +20,16 @@ auto read_port_or_exit() -> int
     const char* port_str = std::getenv("SERVER_PORT");
     if (port_str == nullptr)
     {
-        /*log*/std::cerr << "错误：缺少必需的环境变量 SERVER_PORT。" << std::endl;
+        /*log*/std::cerr << "错误：缺少必需的环境变量 SERVER_PORT！" << std::endl;
         std::exit(1);
     }
     const int port = std::atoi(port_str);
     if (port <= 0)
     {
-        /*log*/std::cerr << "错误：SERVER_PORT 必须是有效的端口号。" << std::endl;
+        /*log*/std::cerr << "错误：SERVER_PORT 必须是有效的端口号！" << std::endl;
         std::exit(1);
     }
-    /*log*/std::cout << "SERVER_PORT 获取成功！" << std::endl;
+    /*log*/std::cout << "SERVER_PORT 获取成功。\n" << std::endl;
     return port;
 }
 
@@ -39,10 +39,10 @@ auto read_frontend_origin_or_exit() -> std::string
     const char* origin = std::getenv("FRONTEND_ORIGIN");
     if (origin == nullptr)
     {
-        /*log*/std::cerr << "错误：缺少必需的环境变量 FRONTEND_ORIGIN。" << std::endl;
+        /*log*/std::cerr << "错误：缺少必需的环境变量 FRONTEND_ORIGIN！" << std::endl;
         std::exit(1);
     }
-    /*log*/std::cout << "FRONTEND_ORIGIN 获取成功！" << std::endl;
+    /*log*/std::cout << "FRONTEND_ORIGIN 获取成功。\n" << std::endl;
     return origin;
 }
 
@@ -52,10 +52,10 @@ auto read_host_or_exit() -> std::string
     const char* host = std::getenv("SERVER_HOST");
     if (host == nullptr)
     {
-        /*log*/std::cerr << "错误：缺少必需的环境变量 SERVER_HOST。" << std::endl;
+        /*log*/std::cerr << "错误：缺少必需的环境变量 SERVER_HOST！" << std::endl;
         std::exit(1);
     }
-    /*log*/std::cout << "SERVER_HOST 获取成功！" << std::endl;
+    /*log*/std::cout << "SERVER_HOST 获取成功。\n" << std::endl;
     return host;
 }
 
