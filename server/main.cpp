@@ -15,7 +15,6 @@ int main(int argc, char* argv[])
     const int         port = http::read_port_or_exit();
 
     pqxx::connection conn = db::connect();
-    pqxx::work txn(conn);
 
     httplib::Server svr;
     http::setup_routes(svr, conn);
