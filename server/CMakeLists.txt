@@ -9,11 +9,17 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # vcpkg 依赖
 find_package(libpqxx CONFIG REQUIRED)
+find_package(unofficial-sodium CONFIG REQUIRED)
+find_package(httplib CONFIG REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
 
 # 源文件
 add_executable(${PROJECT_NAME}
     main.cpp
     src/db/connection.cpp
+    src/crypto/argon2id.cpp
+    src/auth/login.cpp
+    src/http/routes.cpp
 )
 
 # 头文件
@@ -26,6 +32,9 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     PRIVATE
         libpqxx::pqxx
+        unofficial-sodium::sodium
+        httplib::httplib
+        nlohmann_json::nlohmann_json
 )
 
 # ---------- 安装规则 ----------

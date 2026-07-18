@@ -16,6 +16,6 @@ namespace db {
  *
  * @return 已打开的 pqxx::connection。
  */
-auto connect() -> pqxx::connection;
+[[nodiscard]] auto connect() -> pqxx::connection;
 
 } // namespace db
