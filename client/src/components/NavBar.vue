@@ -1,10 +1,29 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { storeToRefs } from 'pinia'
 import { useThemeStore } from '@/stores/theme'
+import { useAuthStore } from '@/stores/auth'
+
+const router = useRouter()
 
 const theme = useThemeStore()
 const { isDark } = storeToRefs(theme)
 const { toggle } = theme
+
+const auth = useAuthStore()
+const { isLoggedIn, username } = storeToRefs(auth)
+
+/** 用户按钮跳转目标：未登录 → /login/key，已登录 → /profile */
+const userLink = computed(() =>
+  isLoggedIn.value ? '/profile' : '/login/key'
+)
+
+/** 用户按钮显示文本 */
+const userLabel = computed(() => {
+  if (!isLoggedIn.value) return '权限认证'
+  return username.value ?? '匿名用户'
+})
 </script>
 
 <template>
@@ -19,6 +38,11 @@ const { toggle } = theme
         maskImage: `url(https://cdn.jsdelivr.net/npm/heroicons@2.1.1/24/solid/${isDark ? 'moon' : 'sun'}.svg)`,
       }"
     ></button>
+
+    <!-- 用户按钮 -->
+    <button class="header__user-btn" @click="router.push(userLink)">
+      {{ userLabel }}
+    </button>
 
     <div class="navbar-spacer"></div>
 
@@ -82,6 +106,29 @@ const { toggle } = theme
 
 .header__theme-btn:hover {
   background-color: var(--color-text);
+}
+
+.header__user-btn {
+  margin-left: 12px;
+  min-width: 10ch;
+  padding: 4px 8px;
+  font-family: 'FangSong', '仿宋', STFangsong, serif;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: none;
+  cursor: pointer;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  transition: color 0.3s, border-color 0.3s;
+}
+
+.header__user-btn:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-secondary);
 }
 
 .navbar-spacer {
