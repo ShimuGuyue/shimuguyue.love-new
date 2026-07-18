@@ -1,15 +1,35 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
+const STORAGE_KEY = 'auth'
+
+function load() {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    if (!raw) return { isLoggedIn: false, username: null as string | null }
+    try {
+        const { isLoggedIn, username } = JSON.parse(raw)
+        return { isLoggedIn: !!isLoggedIn, username: username ?? null }
+    } catch {
+        return { isLoggedIn: false, username: null as string | null }
+    }
+}
+
+function save(isLoggedIn: boolean, username: string | null) {
+    localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({ isLoggedIn, username }),
+    )
+}
+
 /**
  * 用户认证状态管理。
  *
- * 登录状态下持有当前用户的 username 和认证凭据；
- * 未登录时 isLoggedIn 为 false，username 为 null。
+ * 登录状态持久化到 localStorage
  */
 export const useAuthStore = defineStore('auth', () => {
-    const isLoggedIn = ref(false)
-    const username = ref<string | null>(null)
+    const stored = load()
+    const isLoggedIn = ref(stored.isLoggedIn)
+    const username = ref<string | null>(stored.username)
 
     /**
      * 设置登录状态。
@@ -18,6 +38,7 @@ export const useAuthStore = defineStore('auth', () => {
     function login(name?: string | null) {
         username.value = name ?? null
         isLoggedIn.value = true
+        save(true, username.value)
     }
 
     /**
@@ -26,6 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
     function logout() {
         username.value = null
         isLoggedIn.value = false
+        localStorage.removeItem(STORAGE_KEY)
     }
 
     return { isLoggedIn, username, login, logout }
