@@ -72,7 +72,7 @@ auto login_by_password(
         return std::nullopt;
 
     const auto hash_str = hash.as<std::string>();
-    if (!crypto::Argon2id::verify(hash_str, password))
+    if (!crypto::Argon2id::verify(password, hash_str))
         return std::nullopt;
 
     LoginResult result;
