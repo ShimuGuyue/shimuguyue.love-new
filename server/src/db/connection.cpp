@@ -40,7 +40,7 @@ namespace db {
 
 auto connect() -> pqxx::connection
 {
-    /*log*/std::cout << "正在连接至数据库..." << std::endl;
+    /*log*/std::cout << "正在连接至 PostgreSQL..." << std::endl;
 
     auto host     = env_required("PGHOST");
     auto port     = env_required("PGPORT");
@@ -56,10 +56,10 @@ auto connect() -> pqxx::connection
 
     if (!conn.is_open())
     {
-        /*log*/std::cout << "连接至数据库失败！" << std::endl;
+        /*log*/std::cout << "连接至 PostgreSQL 失败！" << std::endl;
         exit(1);
     }
-    /*log*/std::cout << std::format("成功连接至数据库。\n") << std::endl;
+    /*log*/std::cout << std::format("成功连接至 PostgreSQL。\n") << std::endl;
     return conn;
 }
 
