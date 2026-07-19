@@ -101,7 +101,7 @@ static void handle_login_key(
     if (!result)
     {
         res.status = 401;
-        res.set_content(R"({"error":"不存在的密钥"})", "application/json");
+        res.set_content(R"({"error":"不存在或已失效的密钥"})", "application/json");
         return;
     }
     nlohmann::json resp;

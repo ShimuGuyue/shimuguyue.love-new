@@ -17,32 +17,31 @@ auto login_by_key(
     if (key.empty())
         return std::nullopt;
 
+    // 使用固定盐值对 key 做一次哈希，然后数据库精确查找
+    const auto hash = crypto::Argon2id::hash_with_fixed_salt(key);
+    if (!hash)
+        return std::nullopt;
+
     pqxx::work txn{ conn };
 
-    // 查询所有启用的 key
-    const auto rows = txn.exec(
-        "SELECT id, key_hash, username "
+    const auto row = txn.exec(
+        "SELECT id, username "
         "FROM users "
-        "WHERE key_enabled = TRUE"
+        "WHERE key_hash = $1 AND key_enabled = TRUE",
+        pqxx::params{ *hash }
     );
 
-    for (const auto& row : rows)
-    {
-        const auto hash = row["key_hash"].as<std::string>();
-        if (crypto::Argon2id::verify(hash, key))
-        {
-            LoginResult result;
-            result.id = row["id"].as<int>();
-            if (!row["username"].is_null())
-            {
-                result.username = row["username"].as<std::string>();
-            }
-            txn.commit();
-            return result;
-        }
-    }
+    if (row.empty())
+        return std::nullopt;
 
-    return std::nullopt;
+    LoginResult result;
+    result.id = row[0]["id"].as<int>();
+    if (!row[0]["username"].is_null())
+    {
+        result.username = row[0]["username"].as<std::string>();
+    }
+    txn.commit();
+    return result;
 }
 
 auto login_by_password(
@@ -73,7 +72,7 @@ auto login_by_password(
         return std::nullopt;
 
     const auto hash_str = hash.as<std::string>();
-    if (!crypto::Argon2id::verify(hash_str, password))
+    if (!crypto::Argon2id::verify(password, hash_str))
         return std::nullopt;
 
     LoginResult result;
