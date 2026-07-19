@@ -8,10 +8,10 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # vcpkg 依赖
-find_package(libpqxx CONFIG REQUIRED)
+find_package(libpqxx           CONFIG REQUIRED)
 find_package(unofficial-sodium CONFIG REQUIRED)
-find_package(httplib CONFIG REQUIRED)
-find_package(nlohmann_json CONFIG REQUIRED)
+find_package(httplib           CONFIG REQUIRED)
+find_package(nlohmann_json     CONFIG REQUIRED)
 
 # 源文件
 add_executable(${PROJECT_NAME}
