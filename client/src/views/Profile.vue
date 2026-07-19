@@ -23,6 +23,18 @@ function handleLogout() {
         匿名用户
       </p>
 
+      <!-- 权限列表 -->
+      <ul v-if="auth.permissions.length" class="profile-card__permissions">
+        <li
+          v-for="perm in auth.permissions"
+          :key="perm"
+          class="profile-card__perm-item"
+        >
+          {{ perm }}
+        </li>
+      </ul>
+      <p v-else class="profile-card__no-perm">暂无特殊权限</p>
+
       <button class="profile-card__logout" @click="handleLogout">
         退出登录
       </button>
@@ -70,7 +82,33 @@ function handleLogout() {
   color: var(--color-text-secondary);
 }
 
+/* ── 权限列表 ── */
+
+.profile-card__permissions {
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}
+
+.profile-card__perm-item {
+  padding: 6px 0;
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.profile-card__no-perm {
+  margin: 12px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* ── 退出 ── */
+
 .profile-card__logout {
+  margin-top: 20px;
   padding: 10px 0;
   width: 100%;
   border: 1px solid var(--color-border);

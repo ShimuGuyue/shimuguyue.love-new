@@ -10,29 +10,62 @@
 
 namespace auth {
 
+namespace {
+
+/**
+ * @brief 查询用户的权限列表。
+ * @param txn     当前事务。
+ * @param user_id 用户 ID。
+ * @return 权限列表。
+ */
+auto fetch_permissions(pqxx::work& txn, int user_id) -> std::vector<std::string>
+{
+    const auto rows = txn.exec(
+        "SELECT p.name "
+        "FROM user_permissions up "
+        "JOIN permissions p ON p.id = up.permission_id "
+        "WHERE up.user_id = $1 "
+        "ORDER BY up.user_id, up.permission_id",
+        pqxx::params{ user_id }
+    );
+
+    std::vector<std::string> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows)
+    {
+        result.emplace_back(row["name"].as<std::string>());
+    }
+    return result;
+}
+
+} // namespace
+
 auto login_by_key(
     pqxx::connection& conn, std::string_view key)
--> std::optional<LoginResult>
+-> std::expected<LoginResult, std::string>
 {
     if (key.empty())
-        return std::nullopt;
+        return std::unexpected(std::string{"密钥不能为空"});
 
     // 使用固定盐值对 key 做一次哈希，然后数据库精确查找
     const auto hash = crypto::Argon2id::hash_with_fixed_salt(key);
     if (!hash)
-        return std::nullopt;
+        return std::unexpected(std::string{"系统出了点问题，请稍后再试"});
 
     pqxx::work txn{ conn };
 
+    // 先查该哈希是否存在（不关注是否启用）
     const auto row = txn.exec(
-        "SELECT id, username "
+        "SELECT id, username, key_enabled "
         "FROM users "
-        "WHERE key_hash = $1 AND key_enabled = TRUE",
+        "WHERE key_hash = $1",
         pqxx::params{ *hash }
     );
 
     if (row.empty())
-        return std::nullopt;
+        return std::unexpected(std::string{"不存在的密钥"});
+    if (!row[0]["key_enabled"].as<bool>())
+        return std::unexpected(std::string{"该密钥已被废弃"});
 
     LoginResult result;
     result.id = row[0]["id"].as<int>();
@@ -40,6 +73,7 @@ auto login_by_key(
     {
         result.username = row[0]["username"].as<std::string>();
     }
+    result.permissions = fetch_permissions(txn, result.id);
     txn.commit();
     return result;
 }
@@ -78,6 +112,7 @@ auto login_by_password(
     LoginResult result;
     result.id = row[0]["id"].as<int>();
     result.username = std::string{username};
+    result.permissions = fetch_permissions(txn, result.id);
     txn.commit();
     return result;
 }

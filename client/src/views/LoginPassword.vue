@@ -36,12 +36,12 @@ async function handleSubmit() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ username: name, password: pwd.value }),
     })
-    const data: { error?: string; username?: string } = await resp.json()
+    const data: { error?: string; username?: string; permissions?: string[] } = await resp.json()
     if (!resp.ok) {
       error.value = data.error || '用户名或密码错误'
       return
     }
-    auth.login(data.username || name)
+    auth.login(data.username || name, data.permissions)
     router.push('/')
   } catch {
     error.value = '网络错误，请稍后重试'
