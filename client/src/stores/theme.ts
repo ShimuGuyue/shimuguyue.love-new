@@ -10,6 +10,7 @@ export const useThemeStore = defineStore('theme', () => {
     document.documentElement.classList.toggle('dark', val)
   }, { immediate: true })
 
+  /** 切换亮色/暗色主题。 */
   function toggle() {
     isDark.value = !isDark.value
   }

@@ -8,6 +8,7 @@
 #include <optional>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include <pqxx/pqxx>
 
@@ -20,6 +21,7 @@ struct LoginResult
 {
     int                        id;
     std::optional<std::string> username;
+    std::vector<std::string>   permissions;
 };
 
 /**

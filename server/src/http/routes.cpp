@@ -111,6 +111,7 @@ static void handle_login_key(
     resp["username"] = result->username.has_value()
         ? nlohmann::json(*result->username)
         : nlohmann::json(nullptr);
+    resp["permissions"] = result->permissions;
     res.set_content(resp.dump(), "application/json");
 }
 
@@ -148,8 +149,9 @@ static void handle_login_password(
         return;
     }
     nlohmann::json resp;
-    resp["id"]       = result->id;
-    resp["username"] = *result->username;
+    resp["id"]          = result->id;
+    resp["username"]    = *result->username;
+    resp["permissions"] = result->permissions;
     res.set_content(resp.dump(), "application/json");
 }
 

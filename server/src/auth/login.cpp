@@ -10,6 +10,36 @@
 
 namespace auth {
 
+namespace {
+
+/**
+ * @brief 查询用户的权限列表。
+ * @param txn     当前事务。
+ * @param user_id 用户 ID。
+ * @return 权限列表。
+ */
+auto fetch_permissions(pqxx::work& txn, int user_id) -> std::vector<std::string>
+{
+    const auto rows = txn.exec(
+        "SELECT p.name "
+        "FROM user_permissions up "
+        "JOIN permissions p ON p.id = up.permission_id "
+        "WHERE up.user_id = $1 "
+        "ORDER BY up.user_id, up.permission_id",
+        pqxx::params{ user_id }
+    );
+
+    std::vector<std::string> result;
+    result.reserve(rows.size());
+    for (const auto& row : rows)
+    {
+        result.emplace_back(row["name"].as<std::string>());
+    }
+    return result;
+}
+
+} // namespace
+
 auto login_by_key(
     pqxx::connection& conn, std::string_view key)
 -> std::expected<LoginResult, std::string>
@@ -43,6 +73,7 @@ auto login_by_key(
     {
         result.username = row[0]["username"].as<std::string>();
     }
+    result.permissions = fetch_permissions(txn, result.id);
     txn.commit();
     return result;
 }
@@ -81,6 +112,7 @@ auto login_by_password(
     LoginResult result;
     result.id = row[0]["id"].as<int>();
     result.username = std::string{username};
+    result.permissions = fetch_permissions(txn, result.id);
     txn.commit();
     return result;
 }
