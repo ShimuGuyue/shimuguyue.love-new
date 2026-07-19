@@ -24,7 +24,7 @@ struct LoginResult
 /**
  * @brief 通过 Key 登录。
  *
- * 遍历所有 key_enabled = TRUE 的用户，逐行用 Argon2id 验证 key。
+ * 使用固定盐值 Argon2id 对 key 做一次哈希，然后数据库精确匹配。
  *
  * @param conn 数据库连接。
  * @param key  用户输入的原始 key。

@@ -30,7 +30,7 @@ async function handleSubmit() {
     })
     const data: { error?: string; username?: string | null } = await resp.json()
     if (!resp.ok) {
-      error.value = data.error || '不存在的密钥'
+      error.value = data.error || '不存在或已失效的密钥'
       return
     }
     auth.login(data.username)
