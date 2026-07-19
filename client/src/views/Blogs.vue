@@ -223,12 +223,12 @@ onMounted(async () => {
       >
         <h3 class="blog-card__title">{{ blog.title }}</h3>
         <p class="blog-card__desc">{{ blog.description }}</p>
-        <div class="blog-card__meta">
-          <span v-if="blog.category" class="blog-card__category">{{ blog.category }}</span>
+        <div class="blog-card__meta blog-tags">
+          <span v-if="blog.category" class="blog-category">{{ blog.category }}</span>
           <span
             v-for="tag in blog.tags"
             :key="tag"
-            class="blog-card__tag"
+            class="blog-tag"
           >{{ tag }}</span>
         </div>
         <time class="blog-card__time">{{ blog.update_time }}</time>
@@ -364,74 +364,9 @@ onMounted(async () => {
   gap: 20px;
 }
 
-/* ── 博客卡片 ── */
 
-.blog-card {
-  display: flex;
-  flex-direction: column;
-  padding: 20px;
-  background-color: var(--color-card-bg, var(--color-nav-bg));
-  border: 1px solid var(--color-border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: box-shadow 0.2s, border-color 0.2s;
-}
+</style>
 
-.blog-card:hover {
-  border-color: var(--color-text-secondary);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-}
-
-.blog-card__title {
-  margin: 0 0 8px;
-  font-size: 1.05rem;
-  font-weight: 600;
-  color: var(--color-text);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.blog-card__desc {
-  margin: 0 0 10px;
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.blog-card__meta {
-  display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 6px;
-  height: calc(1.5em * 2);
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-
-.blog-card__category {
-  padding: 1px 8px;
-  font-size: 0.75rem;
-  color: var(--color-text);
-  background-color: var(--color-border);
-  border-radius: 3px;
-}
-
-.blog-card__tag {
-  padding: 1px 8px;
-  font-size: 0.75rem;
-  color: var(--color-text-secondary);
-  background-color: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 3px;
-}
-
-.blog-card__time {
-  margin-top: auto;
-  font-size: 0.78rem;
-  color: var(--color-text-secondary);
-}
+<style>
+@import "@/assets/blog.css";
 </style>
