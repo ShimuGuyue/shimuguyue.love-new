@@ -20,27 +20,27 @@ COMMENT ON COLUMN categories.name IS '类别名';
 -- id:           自增主键
 -- title:        博客标题
 -- description:  简介 / 描述
--- updated_at:   更新时间（精确到日）
+-- update_time:  更新时间（精确到日）
 -- content:      博客正文内容
 -- file_path:    关联文件相对路径
 -- category_id:  所属分类（一对多：一个分类下有多个博客）
 -- ============================================================
 
 CREATE TABLE blogs (
-    id          SERIAL  PRIMARY KEY,
-    title       TEXT    NOT NULL UNIQUE,
-    description TEXT    NOT NULL,
-    updated_at  DATE    NOT NULL DEFAULT CURRENT_DATE,
-    content     TEXT    NOT NULL,
-    file_path   TEXT    NOT NULL UNIQUE,
-    category_id INT     REFERENCES categories(id) ON DELETE SET NULL
+    id           SERIAL  PRIMARY KEY,
+    title        TEXT    NOT NULL UNIQUE,
+    description  TEXT    NOT NULL,
+    update_time  DATE    NOT NULL DEFAULT CURRENT_DATE,
+    content      TEXT    NOT NULL,
+    file_path    TEXT    NOT NULL UNIQUE,
+    category_id  INT     REFERENCES categories(id) ON DELETE SET NULL
 );
 
 COMMENT ON TABLE  blogs IS '博客表';
 COMMENT ON COLUMN blogs.id           IS '主键，自增';
 COMMENT ON COLUMN blogs.title        IS '博客标题';
 COMMENT ON COLUMN blogs.description  IS '简介 / 描述';
-COMMENT ON COLUMN blogs.updated_at   IS '更新时间（精确到日）';
+COMMENT ON COLUMN blogs.update_time  IS '更新时间（精确到日）';
 COMMENT ON COLUMN blogs.content      IS '博客正文';
 COMMENT ON COLUMN blogs.file_path    IS '关联文件相对路径';
 COMMENT ON COLUMN blogs.category_id  IS '所属分类';
