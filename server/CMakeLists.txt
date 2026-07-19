@@ -19,6 +19,7 @@ add_executable(${PROJECT_NAME}
     src/db/connection.cpp
     src/crypto/argon2id.cpp
     src/auth/login.cpp
+    src/blog/blog_queries.cpp
     src/http/routes.cpp
 )
 
