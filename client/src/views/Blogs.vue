@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 
 const router = useRouter()
+const route = useRoute()
 
 // ── 类型定义 ──
 
@@ -58,7 +59,9 @@ const visibleTags = computed<Tag[]>(() => {
 })
 
 // 分类切换后清除已不存在的标签选中
+let initializing = false
 watch(selectedCategoryIds, () => {
+  if (initializing) return
   const visibleIds = new Set(visibleTags.value.map(t => t.id))
   selectedTagIds.value = selectedTagIds.value.filter(id => visibleIds.has(id))
 })
@@ -104,12 +107,35 @@ async function fetchBlogs() {
     const resp = await fetch('/api/blogs?' + params.toString())
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     blogs.value = await resp.json()
+    syncUrl()
   } catch (e) {
     console.error('获取博客失败:', e)
     blogs.value = []
   } finally {
     loading.value = false
   }
+}
+
+// ── URL 同步 ──
+
+function syncUrl() {
+  const q: Record<string, string> = {}
+  // ID → name 转换
+  const catNames = selectedCategoryIds.value
+    .map(id => categories.value.find(c => c.id === id)?.name).filter(Boolean)
+  const tagNames = selectedTagIds.value
+    .map(id => tags.value.find(t => t.id === id)?.name).filter(Boolean)
+  if (catNames.length) q.categories = catNames.join(',')
+  if (tagNames.length) q.tags       = tagNames.join(',')
+  if (searchQuery.value.trim())     q.q = searchQuery.value.trim()
+  if (categoryMulti.value)          q.cm = '1'
+  if (tagMulti.value)               q.tm = '1'
+  router.replace({ query: Object.keys(q).length ? q : {} })
+}
+
+function parseNames(raw: string | undefined): string[] {
+  if (!raw) return []
+  return raw.split(',').map(decodeURIComponent).filter(Boolean)
 }
 
 // ── 筛选操作 ──
@@ -156,8 +182,24 @@ function goToBlog(filePath: string) {
 // ── 生命周期 ──
 
 onMounted(async () => {
+  // 从 URL 读取 name 参数（等数据加载后转 ID）
+  const urlCatNames = parseNames(route.query.categories as string | undefined)
+  const urlTagNames = parseNames(route.query.tags as string | undefined)
+  searchQuery.value   = (route.query.q as string) || ''
+  categoryMulti.value = route.query.cm === '1'
+  tagMulti.value      = route.query.tm === '1'
+
+  initializing = true
   await Promise.all([fetchCategories(), fetchTags()])
+
+  // name → ID 转换
+  selectedCategoryIds.value = urlCatNames
+    .map(n => categories.value.find(c => c.name === n)?.id).filter(Boolean) as number[]
+  selectedTagIds.value = urlTagNames
+    .map(n => tags.value.find(t => t.name === n)?.id).filter(Boolean) as number[]
+
   await fetchBlogs()
+  initializing = false
 })
 </script>
 
