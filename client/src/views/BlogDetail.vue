@@ -1,8 +1,15 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import MarkdownIt from 'markdown-it'
 
 const route = useRoute()
+
+const md = new MarkdownIt({
+  html: true,
+  linkify: true,
+  typographer: true,
+})
 
 interface BlogDetail {
   id: number
@@ -16,6 +23,11 @@ interface BlogDetail {
 
 const blog = ref<BlogDetail | null>(null)
 const loading = ref(true)
+
+const renderedContent = computed(() => {
+  if (!blog.value?.content) return ''
+  return md.render(blog.value.content)
+})
 
 onMounted(async () => {
   try {
@@ -52,7 +64,7 @@ onMounted(async () => {
       </aside>
 
       <!-- 中间：正文 -->
-      <article v-if="blog.content" class="blog-detail__content">{{ blog.content }}</article>
+      <article v-if="blog.content" class="blog-detail__content" v-html="renderedContent"></article>
 
       <!-- 右侧留空 -->
       <div class="blog-detail__right"></div>
@@ -115,10 +127,10 @@ onMounted(async () => {
   font-size: 0.95rem;
   color: var(--color-text);
   line-height: 1.8;
-  white-space: pre-wrap;
 }
 </style>
 
 <style>
 @import "@/assets/blog.css";
+@import "@/assets/markdown.css";
 </style>
