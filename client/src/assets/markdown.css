@@ -70,3 +70,46 @@
     transparent 3px 6px
   );
 }
+
+/* =============================
+ *  文本排版样式
+ * ============================= */
+
+/* 段落 */
+/* .blog-detail__content p {} */
+
+/* 斜体 */
+/* .blog-detail__content em {} */
+
+/* 加粗 */
+.blog-detail__content strong {
+  color: var(--pink-hot);
+}
+
+/* 链接 */
+.blog-detail__content a {
+  color: var(--pink-light);
+  word-wrap: break-word;
+  text-decoration: underline solid;
+  margin: 2px;
+}
+.blog-detail__content a:hover {
+  color: var(--pink-hot);
+}
+
+/* 删除线（隐藏） */
+.blog-detail__content del,
+.blog-detail__content s {
+  background-color: var(--purple-herrscher);
+  color: var(--purple-herrscher);
+  border: 1px solid var(--purple-herrscher);
+  border-radius: 3px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+.blog-detail__content del:hover,
+.blog-detail__content s:hover {
+  background-color: var(--pink-bright);
+  color: var(--pink-soft);
+  border: 1px dashed var(--pink-soft);
+}

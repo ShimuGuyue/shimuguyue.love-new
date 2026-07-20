@@ -124,7 +124,7 @@ onMounted(async () => {
 /* ── 中间正文 ── */
 
 .blog-detail__content {
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   color: var(--color-text);
   line-height: 1.8;
 }
