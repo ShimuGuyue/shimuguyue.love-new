@@ -28,17 +28,19 @@ md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
   return `<div class="code-block"><div class="code-block__lang">${md.utils.escapeHtml(lang)}</div>${body}</div>`
 }
 
-/** 自定义 heading_open：添加锚点 id */
+/** 自定义 heading_open：添加锚点 id 和 # 链接 */
 const fallbackOpen = (tokens: any, idx: any, options: any, env: any, self: any) => self.renderToken(tokens, idx, options)
 const rawHeadingOpen = md.renderer.rules.heading_open || fallbackOpen
 md.renderer.rules.heading_open = (tokens, idx, options, env, self): string => {
   const token = tokens[idx]!
   const nextToken = tokens[idx + 1]
+  let slug = ''
   if (nextToken && nextToken.type === 'inline') {
-    const slug = nextToken.content.replace(/[^a-zA-Z0-9\u4e00-\u9fff]+/g, '-').replace(/^-|-$/g, '').toLowerCase()
+    slug = nextToken.content.replace(/[^a-zA-Z0-9\u4e00-\u9fff]+/g, '-').replace(/^-|-$/g, '').toLowerCase()
     token.attrSet('id', slug)
   }
-  return rawHeadingOpen(tokens, idx, options, env, self)
+  const html = rawHeadingOpen(tokens, idx, options, env, self)
+  return slug ? html + '<a class="heading-anchor" href="#' + slug + '">#</a>' : html
 }
 
 /** 自定义 image 渲染：alt 文字作为图片下方说明 */
