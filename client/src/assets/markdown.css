@@ -35,7 +35,32 @@
   color: var(--pink-soft);
   font-weight: 800;
   line-height: 1;
+  cursor: pointer;
   margin: 1em 0 0.5em;
+  position: relative;
+  scroll-margin-top: 100px;
+}
+
+/* 标题锚点链接 # */
+.blog-detail__content .heading-anchor {
+  position: absolute;
+  left: -1.5rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: var(--pink-soft);
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+.blog-detail__content h1:hover .heading-anchor,
+.blog-detail__content h2:hover .heading-anchor,
+.blog-detail__content h3:hover .heading-anchor,
+.blog-detail__content h4:hover .heading-anchor,
+.blog-detail__content h5:hover .heading-anchor,
+.blog-detail__content h6:hover .heading-anchor {
+  opacity: 1;
 }
 
 /* 标题装饰符号 */
