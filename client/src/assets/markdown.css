@@ -126,3 +126,24 @@ html.dark .blog-detail__content {
   color: var(--pink-soft);
   border: 1px dashed var(--pink-soft);
 }
+
+/* =============================
+ *  引用块样式
+ * ============================= */
+
+.blog-detail__content blockquote {
+  border: 1px solid var(--pink-soft);
+  border-left: 4px solid var(--pink-soft);
+  border-right: 0px;
+  padding: 15px 30px 15px 20px;
+  background-color: rgba(0, 0, 0, 0.05);
+  color: #999;
+  font-weight: bold;
+}
+
+/* 深色模式 */
+html.dark
+.blog-detail__content blockquote {
+  border-color: var(--pink-soft);
+  border-left-color: var(--pink-soft);
+}
