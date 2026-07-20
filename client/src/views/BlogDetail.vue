@@ -85,19 +85,24 @@ function renderKatex(formula: string, display: boolean): string {
   }
 }
 
-interface TocItem { level: number; text: string; slug: string }
+interface FlatTocItem {
+  level: number
+  text: string
+  slug: string
+}
 
-const headings = computed<TocItem[]>(() => {
+const headings = computed<FlatTocItem[]>(() => {
   if (!blog.value?.content) return []
-  const items: TocItem[] = []
+  const flat: FlatTocItem[] = []
   const re = /^(#{1,6})\s+(.+)$/gm
   let m: RegExpExecArray | null
   while ((m = re.exec(blog.value.content)) !== null) {
     const text = m[2]!.trim()
     const slug = text.replace(/[^a-zA-Z0-9\u4e00-\u9fff]+/g, '-').replace(/^-|-$/g, '').toLowerCase()
-    items.push({ level: m[1]!.length, text, slug })
+    const level = m[1]!.length
+    if (level <= 4) flat.push({ level, text, slug })
   }
-  return items
+  return flat
 })
 
 function scrollToHeading(slug: string) {
@@ -152,12 +157,14 @@ watch(renderedContent, async () => {
         <h4 class="toc-title">目录</h4>
         <ul class="toc-list">
           <li
-            v-for="(h, i) in headings"
-            :key="i"
-            :style="{ paddingLeft: (h.level - 1) * 0.6 + 'em' }"
+            v-for="h in headings"
+            :key="h.slug"
             class="toc-item"
-            @click="scrollToHeading(h.slug)"
-          >{{ h.text }}</li>
+            :style="{ paddingLeft: `${(h.level - 1) * 1}em` }"
+            @click.stop="scrollToHeading(h.slug)"
+          >
+            <span class="toc-link">{{ h.text }}</span>
+          </li>
         </ul>
       </nav>
     </div>
@@ -232,23 +239,52 @@ watch(renderedContent, async () => {
   max-height: calc(100vh - 120px);
   overflow-y: auto;
 }
+
 .toc-title {
   margin: 0 0 12px;
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--color-text);
 }
-.toc-list { list-style: none; padding: 0; margin: 0; }
+
+.toc-list {
+  list-style: none;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
 .toc-item {
-  padding: 3px 0 3px 8px;
-  font-size: 0.82rem;
+  margin: 0 !important;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  font-size: 0.95rem;
+  line-height: 1.4;
   color: var(--color-text-secondary);
   cursor: pointer;
-  border-left: 2px solid transparent;
-  transition: color var(--transition-speed), border-color var(--transition-speed);
 }
-.toc-item:hover {
+
+.toc-link {
+  position: relative;
+  padding-left: 12px;
+  display: inline-block;
+}
+
+/* 指示线严格只相对于文字单行高度定位 */
+.toc-link::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  border-left: 2px solid transparent;
+  transition: border-color var(--transition-speed);
+}
+
+.toc-item:hover .toc-link {
   color: var(--pink-hot, #FF77CC);
+}
+
+.toc-item:hover .toc-link::before {
   border-left-color: var(--pink-hot, #FF77CC);
 }
 </style>
