@@ -129,6 +129,9 @@ watch(renderedContent, async () => {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  position: sticky;
+  top: 120px;
+  align-self: start;
 }
 
 .blog-detail__title {
