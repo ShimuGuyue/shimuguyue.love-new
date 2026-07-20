@@ -74,7 +74,7 @@ onMounted(async () => {
 
 <style scoped>
 .blog-detail {
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
   padding: 32px 24px 64px;
 }
@@ -88,7 +88,7 @@ onMounted(async () => {
 
 .blog-detail__layout {
   display: grid;
-  grid-template-columns: 1fr 2fr 1fr;
+  grid-template-columns: 1fr 3fr 1fr;
   gap: 40px;
 }
 
