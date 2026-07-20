@@ -110,7 +110,7 @@ html.dark .blog-detail__content {
   color: var(--pink-hot);
 }
 
-/* 删除线（隐藏） */
+/* 删除线：常态被侵蚀紫覆盖，hover 显示文字 */
 .blog-detail__content del,
 .blog-detail__content s {
   background-color: var(--purple-herrscher);
@@ -118,12 +118,12 @@ html.dark .blog-detail__content {
   border: 1px solid var(--purple-herrscher);
   border-radius: 3px;
   text-decoration: none;
-  transition: all 0.2s ease;
+  transition: color 0.15s ease;
 }
 .blog-detail__content del:hover,
 .blog-detail__content s:hover {
-  background-color: var(--pink-bright);
-  color: var(--pink-soft);
+  background-color: transparent;
+  color: inherit;
   border: 1px dashed var(--pink-soft);
 }
 
