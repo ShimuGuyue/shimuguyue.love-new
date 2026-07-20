@@ -117,7 +117,7 @@ function handleLogout() {
   color: #e53e3e;
   background: transparent;
   cursor: pointer;
-  transition: background-color 0.2s, border-color 0.2s;
+  transition: background-color var(--transition-speed), border-color var(--transition-speed);
 }
 
 .profile-card__logout:hover {

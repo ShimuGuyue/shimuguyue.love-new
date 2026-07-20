@@ -163,7 +163,7 @@ async function handleSubmit() {
   border: 1px solid var(--color-border);
   border-radius: 2px;
   overflow: hidden;
-  transition: border-color 0.2s;
+  transition: border-color var(--transition-speed);
 }
 
 .form-field__input-row:focus-within {
@@ -204,7 +204,7 @@ async function handleSubmit() {
   color: #fff;
   background-color: var(--color-text);
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: opacity var(--transition-speed);
 }
 
 .form-submit:hover {

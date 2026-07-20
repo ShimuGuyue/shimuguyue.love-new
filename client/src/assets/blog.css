@@ -12,7 +12,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   cursor: pointer;
-  transition: box-shadow 0.2s, border-color 0.2s;
+  transition: box-shadow var(--transition-speed), border-color var(--transition-speed);
 }
 
 .blog-card:hover {
