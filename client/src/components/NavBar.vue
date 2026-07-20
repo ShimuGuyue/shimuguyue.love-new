@@ -77,7 +77,7 @@ const userLabel = computed(() => {
   background-color: var(--color-nav-bg);
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
-  transition: background-color 0.3s, border-color 0.3s;
+  transition: all var(--transition-speed);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -88,7 +88,7 @@ const userLabel = computed(() => {
   font-weight: 700;
   color: var(--color-text);
   text-decoration: none;
-  transition: color 0.3s;
+  transition: color var(--transition-speed);
 }
 
 .header__theme-btn {
@@ -104,7 +104,7 @@ const userLabel = computed(() => {
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: background-color var(--transition-speed);
 }
 
 .header__theme-btn:hover {
@@ -126,7 +126,7 @@ const userLabel = computed(() => {
   cursor: pointer;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  transition: color 0.3s, border-color 0.3s;
+  transition: color var(--transition-speed), border-color var(--transition-speed);
 }
 
 .header__user-btn:hover {
@@ -148,7 +148,7 @@ const userLabel = computed(() => {
   font-size: 1.125rem;
   color: var(--color-text-secondary);
   text-decoration: none;
-  transition: color 0.3s;
+  transition: color var(--transition-speed);
 }
 
 .header__nav-link:hover {
@@ -165,7 +165,7 @@ const userLabel = computed(() => {
   height: 24px;
   margin: 0 40px;
   background-color: var(--color-border);
-  transition: background-color 0.3s;
+  transition: background-color var(--transition-speed);
 }
 
 .header__social {
@@ -185,7 +185,7 @@ const userLabel = computed(() => {
   -webkit-mask-size: contain;
   -webkit-mask-repeat: no-repeat;
   -webkit-mask-position: center;
-  transition: background-color 0.3s;
+  transition: background-color var(--transition-speed);
 }
 
 .header__social-icon:hover {

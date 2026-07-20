@@ -331,7 +331,7 @@ onMounted(async () => {
   border: 1px solid var(--color-border);
   border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-speed);
 }
 
 .chip:hover {
@@ -355,7 +355,7 @@ onMounted(async () => {
   border: 1px solid var(--color-border);
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all var(--transition-speed);
 }
 
 .filter-mode-btn:hover {
@@ -377,7 +377,7 @@ onMounted(async () => {
   border: 1px solid var(--color-border);
   border-radius: 4px;
   outline: none;
-  transition: border-color 0.2s;
+  transition: border-color var(--transition-speed);
 }
 
 .search-input::placeholder {

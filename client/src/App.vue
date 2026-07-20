@@ -23,6 +23,7 @@ import NavBar from '@/components/NavBar.vue'
   --color-text-secondary: #666;
   --color-border: #e8e8e8;
   --color-hover: #f0f0f0;
+  --transition-speed: 0.5s;
 }
 
 html.dark {
@@ -38,7 +39,7 @@ body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
   color: var(--color-text);
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color var(--transition-speed), color var(--transition-speed);
 }
 </style>
 
