@@ -80,7 +80,7 @@ watch(renderedContent, async () => {
     <p v-else-if="!blog" class="blog-detail__status">博客不存在</p>
     <div v-else class="blog-detail__layout">
       <!-- 左侧：元信息 -->
-      <aside class="blog-detail__side">
+      <aside class="blog-detail__side glass">
         <h1 class="blog-detail__title">{{ blog.title }}</h1>
         <p v-if="blog.description" class="blog-detail__desc">{{ blog.description }}</p>
         <p v-if="blog.category" class="blog-category">{{ blog.category }}</p>
@@ -95,7 +95,7 @@ watch(renderedContent, async () => {
       </aside>
 
       <!-- 中间：正文 -->
-      <article v-if="blog.content" class="blog-detail__content" v-html="renderedContent"></article>
+      <article v-if="blog.content" class="blog-detail__content glass" v-html="renderedContent"></article>
 
       <!-- 右侧留空 -->
       <div class="blog-detail__right"></div>
@@ -166,5 +166,6 @@ watch(renderedContent, async () => {
 
 <style>
 @import "@/assets/blog.css";
+@import "@/assets/glass.css";
 @import "@/assets/markdown.css";
 </style>
