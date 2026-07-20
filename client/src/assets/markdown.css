@@ -314,3 +314,35 @@ html.dark .blog-detail__content .hljs-deletion {
   color: #ff7b72;
   background: rgba(255, 123, 114, 0.15);
 }
+
+/* =============================
+ *  表格样式
+ * ============================= */
+
+.blog-detail__content table {
+  text-align: left;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.blog-detail__content th,
+.blog-detail__content td {
+  border: 1px solid var(--pink-hot);
+  padding: 5px 0.6rem;
+  min-width: 7rem;
+  vertical-align: top;
+}
+
+.blog-detail__content th {
+  font-weight: bold;
+  color: var(--pink-hot);
+  background-color: rgba(255, 119, 204, 0.12);
+}
+
+/* 斑马纹：相间行透明度差 5% */
+.blog-detail__content tr:nth-child(even) td {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+html.dark .blog-detail__content tr:nth-child(even) td {
+  background-color: rgba(255, 255, 255, 0.05);
+}
