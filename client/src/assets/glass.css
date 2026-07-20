@@ -1,0 +1,13 @@
+/* ── 毛玻璃工具类 ── */
+
+.glass {
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 1);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+html.dark .glass {
+  border-color: rgba(0, 0, 0, 1);
+}

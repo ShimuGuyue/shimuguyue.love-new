@@ -7,6 +7,7 @@ import About from '@/views/About.vue'
 import LoginKey from '@/views/LoginKey.vue'
 import LoginPassword from '@/views/LoginPassword.vue'
 import Profile from '@/views/Profile.vue'
+import BlogDetail from '@/views/BlogDetail.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -19,6 +20,7 @@ const router = createRouter({
     { path: '/login/key', name: 'login-key', component: LoginKey },
     { path: '/login/password', name: 'login-password', component: LoginPassword },
     { path: '/profile', name: 'profile', component: Profile },
+    { path: '/blogs/:file_path(.*)', name: 'blog-detail', component: BlogDetail },
   ],
 })
 

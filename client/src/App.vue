@@ -37,8 +37,11 @@ html.dark {
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif;
-  background-color: var(--color-bg);
   color: var(--color-text);
   transition: background-color 0.3s, color 0.3s;
 }
+</style>
+
+<style>
+@import "@/assets/background.css";
 </style>

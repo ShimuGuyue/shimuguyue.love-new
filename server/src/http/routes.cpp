@@ -5,12 +5,18 @@
 
 #include "http/routes.h"
 #include "auth/login.h"
+#include "blog/blog_queries.h"
 
 #include <cstdlib>
 #include <iostream>
+#include <mutex>
+#include <sstream>
 #include <nlohmann/json.hpp>
 
 namespace http {
+
+/// libpqxx connection 非线程安全，所有数据库操作串行化
+static std::mutex g_db_mutex;
 
 // ── 环境变量读取 ──
 
@@ -81,6 +87,7 @@ static void handle_login_key(
     pqxx::connection&        conn,
     const std::string&       allowed)
 {
+    std::lock_guard<std::mutex> lock{ g_db_mutex };
     res.set_header("Access-Control-Allow-Origin", allowed);
     res.set_header("Content-Type", "application/json");
 
@@ -124,6 +131,7 @@ static void handle_login_password(
     pqxx::connection&        conn,
     const std::string&       allowed)
 {
+    std::lock_guard<std::mutex> lock{ g_db_mutex };
     res.set_header("Access-Control-Allow-Origin", allowed);
     res.set_header("Content-Type", "application/json");
 
@@ -155,6 +163,130 @@ static void handle_login_password(
     res.set_content(resp.dump(), "application/json");
 }
 
+/**
+ * @brief 处理 GET /api/categories 请求。
+ */
+static void handle_get_categories(
+    httplib::Response& res,
+    pqxx::connection&  conn,
+    const std::string& allowed)
+{
+    std::lock_guard<std::mutex> lock{ g_db_mutex };
+    res.set_header("Access-Control-Allow-Origin", allowed);
+    res.set_header("Content-Type", "application/json");
+
+    auto categories = blog::get_categories(conn);
+    nlohmann::json arr = nlohmann::json::array();
+    for (const auto& c : categories)
+    {
+        nlohmann::json item;
+        item["id"]   = c.id;
+        item["name"] = c.name;
+        arr.push_back(std::move(item));
+    }
+    res.set_content(arr.dump(), "application/json");
+}
+
+/**
+ * @brief 处理 GET /api/tags 请求。
+ */
+static void handle_get_tags(
+    const httplib::Request& req,
+    httplib::Response&      res,
+    pqxx::connection&       conn,
+    const std::string&      allowed)
+{
+    std::lock_guard<std::mutex> lock{ g_db_mutex };
+    res.set_header("Access-Control-Allow-Origin", allowed);
+    res.set_header("Content-Type", "application/json");
+
+    std::vector<int> category_ids;
+    if (req.has_param("category_ids"))
+    {
+        const auto raw = req.get_param_value("category_ids");
+        std::istringstream iss{ raw };
+        std::string token;
+        while (std::getline(iss, token, ','))
+        {
+            if (!token.empty())
+                category_ids.push_back(std::stoi(token));
+        }
+    }
+
+    auto tags = blog::get_tags(conn, category_ids);
+    nlohmann::json arr = nlohmann::json::array();
+    for (const auto& t : tags)
+    {
+        nlohmann::json item;
+        item["id"]          = t.id;
+        item["name"]        = t.name;
+        item["category_id"] = t.category_id;
+        arr.push_back(std::move(item));
+    }
+    res.set_content(arr.dump(), "application/json");
+}
+
+/**
+ * @brief 处理 GET /api/blogs 请求。
+ */
+static void handle_get_blogs(
+    const httplib::Request&  req,
+    httplib::Response&       res,
+    pqxx::connection&        conn,
+    const std::string&       allowed)
+{
+    std::lock_guard<std::mutex> lock{ g_db_mutex };
+    res.set_header("Access-Control-Allow-Origin", allowed);
+    res.set_header("Content-Type", "application/json");
+
+    blog::BlogQuery query;
+
+    if (req.has_param("category_ids"))
+    {
+        const auto raw = req.get_param_value("category_ids");
+        std::istringstream iss{ raw };
+        std::string token;
+        while (std::getline(iss, token, ','))
+        {
+            if (!token.empty())
+                query.category_ids.push_back(std::stoi(token));
+        }
+    }
+
+    if (req.has_param("tag_ids"))
+    {
+        const auto raw = req.get_param_value("tag_ids");
+        std::istringstream iss{ raw };
+        std::string token;
+        while (std::getline(iss, token, ','))
+        {
+            if (!token.empty())
+                query.tag_ids.push_back(std::stoi(token));
+        }
+    }
+
+    if (req.has_param("q"))
+        query.search = req.get_param_value("q");
+
+    auto blogs = blog::get_blogs(conn, query);
+    nlohmann::json arr = nlohmann::json::array();
+    for (const auto& b : blogs)
+    {
+        nlohmann::json item;
+        item["id"]         = b.id;
+        item["title"]      = b.title;
+        item["description"] = b.description.has_value()
+            ? nlohmann::json(*b.description) : nlohmann::json(nullptr);
+        item["update_time"] = b.update_time;
+        item["category"]   = b.category.has_value()
+            ? nlohmann::json(*b.category) : nlohmann::json(nullptr);
+        item["tags"]       = b.tags;
+        item["file_path"]   = b.file_path.has_value() ? nlohmann::json(*b.file_path) : nlohmann::json(nullptr);
+        arr.push_back(std::move(item));
+    }
+    res.set_content(arr.dump(), "application/json");
+}
+
 // ── 路由注册 ──
 
 void setup_routes(httplib::Server& svr, pqxx::connection& conn)
@@ -179,6 +311,64 @@ void setup_routes(httplib::Server& svr, pqxx::connection& conn)
         [&conn, allowed](const auto& req, auto& res)
         {
             handle_login_password(req, res, conn, allowed);
+        }
+    );
+
+    svr.Get("/api/categories",
+        [&conn, allowed](const auto&, auto& res)
+        {
+            handle_get_categories(res, conn, allowed);
+        }
+    );
+
+    svr.Get("/api/tags",
+        [&conn, allowed](const auto& req, auto& res)
+        {
+            handle_get_tags(req, res, conn, allowed);
+        }
+    );
+
+    svr.Get("/api/blogs",
+        [&conn, allowed](const auto& req, auto& res)
+        {
+            handle_get_blogs(req, res, conn, allowed);
+        }
+    );
+
+    svr.Get("/api/blog",
+        [&conn, allowed](const auto& req, auto& res)
+        {
+            std::lock_guard<std::mutex> lock{ g_db_mutex };
+            res.set_header("Access-Control-Allow-Origin", allowed);
+            res.set_header("Content-Type", "application/json");
+
+            if (!req.has_param("file_path"))
+            {
+                res.status = 400;
+                res.set_content(R"({"error":"缺少 file_path 参数"})", "application/json");
+                return;
+            }
+
+            auto blog = blog::get_blog_by_file_path(conn, req.get_param_value("file_path"));
+            if (!blog)
+            {
+                res.status = 404;
+                res.set_content(R"({"error":"博客不存在"})", "application/json");
+                return;
+            }
+
+            nlohmann::json item;
+            item["id"]          = blog->id;
+            item["title"]       = blog->title;
+            item["description"] = blog->description.has_value()
+                ? nlohmann::json(*blog->description) : nlohmann::json(nullptr);
+            item["content"]     = blog->content.has_value()
+                ? nlohmann::json(*blog->content) : nlohmann::json(nullptr);
+            item["update_time"]  = blog->update_time;
+            item["category"]    = blog->category.has_value()
+                ? nlohmann::json(*blog->category) : nlohmann::json(nullptr);
+            item["tags"]        = blog->tags;
+            res.set_content(item.dump(), "application/json");
         }
     );
 }
