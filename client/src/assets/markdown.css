@@ -348,6 +348,28 @@ html.dark .blog-detail__content tr:nth-child(even) td {
 }
 
 /* =============================
+ *  图片样式
+ * ============================= */
+
+.blog-detail__content img {
+  max-width: 90%;
+  display: inline-block;
+}
+
+/* 图片说明文字 */
+.blog-detail__content figure {
+  display: inline-block;
+  margin: 0.5em;
+  text-align: center;
+  vertical-align: top;
+}
+.blog-detail__content figcaption {
+  margin-top: 0.5em;
+  font-size: 0.9rem;
+  color: #888;
+}
+
+/* =============================
  *  复选框样式
  *  需要 markdown-it-task-lists 插件
  * ============================= */
