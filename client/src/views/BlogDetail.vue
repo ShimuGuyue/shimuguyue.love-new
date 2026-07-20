@@ -5,6 +5,8 @@ import MarkdownIt from 'markdown-it'
 import taskLists from 'markdown-it-task-lists'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
+import katex from 'katex'
+import 'katex/dist/katex.min.css'
 
 const route = useRoute()
 
@@ -13,6 +15,8 @@ const md = new MarkdownIt({
   linkify: true,
   typographer: true,
 }).use(taskLists, { enabled: true, label: true, labelAfter: true })
+
+md.enable('strikethrough')
 
 /** 自定义 fence 渲染：在代码块上显示语言标签 */
 const rawFence = md.renderer.rules.fence!
@@ -51,8 +55,20 @@ const loading = ref(true)
 
 const renderedContent = computed(() => {
   if (!blog.value?.content) return ''
-  return md.render(blog.value.content)
+  let text = blog.value.content
+  // KaTeX 预处理：$$...$$ 和 $...$
+  text = text.replace(/\$\$([^$]+)\$\$/g, (_, f) => renderKatex(f, true))
+  text = text.replace(/\$([^$]+)\$/g, (_, f) => renderKatex(f, false))
+  return md.render(text)
 })
+
+function renderKatex(formula: string, display: boolean): string {
+  try {
+    return katex.renderToString(formula, { displayMode: display, throwOnError: false })
+  } catch {
+    return display ? `$${formula}$` : `$${formula}$$`
+  }
+}
 
 onMounted(async () => {
   try {
@@ -168,4 +184,5 @@ watch(renderedContent, async () => {
 @import "@/assets/blog.css";
 @import "@/assets/glass.css";
 @import "@/assets/markdown.css";
+@import "katex/dist/katex.min.css";
 </style>
