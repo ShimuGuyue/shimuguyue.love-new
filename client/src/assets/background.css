@@ -1,0 +1,73 @@
+/* ==========================================================================
+ * 全局页面背景主题
+ * 爱莉希雅粉色系 (Elysia) × 侵蚀之律者紫色系 (Herrscher of Corruption)
+ * ========================================================================== */
+
+/* ── 1. 全局色彩变量 ── */
+:root {
+  /* 🌸 爱莉希雅色系 (Elysia) */
+  --elysia-base:        #FFF0F6; /* 柔粉背景 */
+  --elysia-hair:        #F88EB9; /* 标志粉发 (主色) */
+  --elysia-accent:      #FF52A3; /* 热辣强粉 (强调) */
+  --elysia-sub-accent:  #C585F7; /* 薰衣草紫 (副强调) */
+  --elysia-eye:         #5CCBFA; /* 水晶蓝瞳 (点缀) */
+  --elysia-gold:        #E4BF83; /* 璀璨饰金 */
+
+  /* 👾 侵蚀之律者色系 (Herrscher of Corruption) */
+  --herrscher-base:       #1E1C31; /* 深暗侵蚀背景 */
+  --herrscher-hair:       #A299C0; /* 灰紫发色 (副强调) */
+  --herrscher-accent:     #4965C3; /* 律者蓝紫 (主色) */
+  --herrscher-sub-accent: #52B2EC; /* 电光青 (次要强调) */
+  --herrscher-eye:        #E6425E; /* 侵蚀红瞳 (点缀) */
+  --herrscher-gold:       #CFA668; /* 锈蚀暗金 */
+}
+
+/* ── 2. 亮色模式：爱莉主场 (5 粉 : 1 紫) ── */
+body {
+  background-color: var(--elysia-base);
+
+  background-image:
+    /* 24px 水晶网格 */
+    linear-gradient(rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.6) 1px, transparent 1px),
+
+    /* 135deg 爱莉环境光束 */
+    linear-gradient(135deg, rgba(248, 142, 185, 0.3) 0%, transparent 60%, rgba(73, 101, 195, 0.1) 100%),
+
+    /* 6 色光斑阵列 (5 爱莉粉色系 + 1 侵蚀紫点缀) */
+    radial-gradient(circle at 10% 10%, rgba(248, 142, 185, 0.55) 0%, transparent 45%), /* hair */
+    radial-gradient(circle at 85% 10%, rgba(73, 101, 195, 0.38)  0%, transparent 45%), /* herrscher-accent */
+    radial-gradient(circle at 90% 85%, rgba(197, 133, 247, 0.45) 0%, transparent 50%), /* sub-accent */
+    radial-gradient(circle at 15% 90%, rgba(255, 82, 163, 0.45) 0%, transparent 50%), /* accent */
+    radial-gradient(circle at 50% 25%, rgba(92, 203, 250, 0.25)  0%, transparent 40%), /* eye */
+    radial-gradient(circle at 50% 75%, rgba(228, 191, 131, 0.3)  0%, transparent 45%); /* gold */
+
+  background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+  background-blend-mode: overlay, overlay, normal, normal, normal, normal, normal, normal, normal;
+}
+
+/* ── 3. 暗色模式：侵蚀主场 (5 紫 : 1 粉) ── */
+html.dark body {
+  background-color: var(--herrscher-base);
+
+  background-image:
+    /* 24px 暗色数据流网格 */
+    linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+
+    /* 135deg 侵蚀电光束 */
+    linear-gradient(135deg, rgba(73, 101, 195, 0.3) 0%, transparent 60%, rgba(248, 142, 185, 0.1) 100%),
+
+    /* 6 色光斑阵列 (5 侵蚀紫色系 + 1 爱莉粉残留) */
+    radial-gradient(circle at 10% 10%, rgba(73, 101, 195, 0.45)  0%, transparent 45%), /* accent */
+    radial-gradient(circle at 85% 10%, rgba(248, 142, 185, 0.25) 0%, transparent 45%), /* elysia-hair */
+    radial-gradient(circle at 90% 85%, rgba(82, 178, 236, 0.35)  0%, transparent 50%), /* sub-accent */
+    radial-gradient(circle at 15% 90%, rgba(162, 153, 192, 0.35) 0%, transparent 50%), /* hair */
+    radial-gradient(circle at 50% 25%, rgba(230, 66, 94, 0.18)   0%, transparent 40%), /* eye */
+    radial-gradient(circle at 50% 75%, rgba(207, 166, 104, 0.2)  0%, transparent 45%); /* gold */
+
+  background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+  background-attachment: fixed;
+  background-blend-mode: screen, screen, normal, normal, normal, normal, normal, normal, normal;
+}
