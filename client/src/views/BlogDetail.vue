@@ -28,6 +28,19 @@ md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
   return `<div class="code-block"><div class="code-block__lang">${md.utils.escapeHtml(lang)}</div>${body}</div>`
 }
 
+/** 自定义 heading_open：添加锚点 id */
+const fallbackOpen = (tokens: any, idx: any, options: any, env: any, self: any) => self.renderToken(tokens, idx, options)
+const rawHeadingOpen = md.renderer.rules.heading_open || fallbackOpen
+md.renderer.rules.heading_open = (tokens, idx, options, env, self): string => {
+  const token = tokens[idx]!
+  const nextToken = tokens[idx + 1]
+  if (nextToken && nextToken.type === 'inline') {
+    const slug = nextToken.content.replace(/[^a-zA-Z0-9\u4e00-\u9fff]+/g, '-').replace(/^-|-$/g, '').toLowerCase()
+    token.attrSet('id', slug)
+  }
+  return rawHeadingOpen(tokens, idx, options, env, self)
+}
+
 /** 自定义 image 渲染：alt 文字作为图片下方说明 */
 const rawImage = md.renderer.rules.image!
 md.renderer.rules.image = (tokens, idx, options, env, self): string => {
@@ -68,6 +81,25 @@ function renderKatex(formula: string, display: boolean): string {
   } catch {
     return display ? `$${formula}$` : `$${formula}$$`
   }
+}
+
+interface TocItem { level: number; text: string; slug: string }
+
+const headings = computed<TocItem[]>(() => {
+  if (!blog.value?.content) return []
+  const items: TocItem[] = []
+  const re = /^(#{1,6})\s+(.+)$/gm
+  let m: RegExpExecArray | null
+  while ((m = re.exec(blog.value.content)) !== null) {
+    const text = m[2]!.trim()
+    const slug = text.replace(/[^a-zA-Z0-9\u4e00-\u9fff]+/g, '-').replace(/^-|-$/g, '').toLowerCase()
+    items.push({ level: m[1]!.length, text, slug })
+  }
+  return items
+})
+
+function scrollToHeading(slug: string) {
+  document.getElementById(slug)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 onMounted(async () => {
@@ -113,8 +145,19 @@ watch(renderedContent, async () => {
       <!-- 中间：正文 -->
       <article v-if="blog.content" class="blog-detail__content glass" v-html="renderedContent"></article>
 
-      <!-- 右侧留空 -->
-      <div class="blog-detail__right"></div>
+      <!-- 右侧：目录 -->
+      <nav v-if="headings.length" class="blog-detail__toc">
+        <h4 class="toc-title">目录</h4>
+        <ul class="toc-list">
+          <li
+            v-for="(h, i) in headings"
+            :key="i"
+            :style="{ paddingLeft: (h.level - 1) * 0.6 + 'em' }"
+            class="toc-item"
+            @click="scrollToHeading(h.slug)"
+          >{{ h.text }}</li>
+        </ul>
+      </nav>
     </div>
   </main>
 </template>
@@ -177,6 +220,34 @@ watch(renderedContent, async () => {
   font-size: 1.05rem;
   color: var(--color-text);
   line-height: 1.8;
+}
+
+/* ── 右侧目录 ── */
+.blog-detail__toc {
+  position: sticky;
+  top: 100px;
+  align-self: start;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}
+.toc-title {
+  margin: 0 0 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.toc-list { list-style: none; padding: 0; margin: 0; }
+.toc-item {
+  padding: 3px 0 3px 8px;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: color var(--transition-speed), border-color var(--transition-speed);
+}
+.toc-item:hover {
+  color: var(--pink-hot, #FF77CC);
+  border-left-color: var(--pink-hot, #FF77CC);
 }
 </style>
 
