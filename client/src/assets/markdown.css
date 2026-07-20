@@ -147,3 +147,116 @@ html.dark
   border-color: var(--pink-soft);
   border-left-color: var(--pink-soft);
 }
+
+/* =============================
+ *  代码样式
+ * ============================= */
+
+/* 行内代码 */
+.blog-detail__content code {
+  color: #888;
+  word-wrap: break-word;
+  word-break: break-all;
+  background-color: rgba(0, 0, 0, 0.06);
+  font-family: "仿宋", FangSong, serif;
+  padding: 0.15em 0.4em;
+  border-radius: 3px;
+}
+
+/* 代码块容器 */
+.blog-detail__content .code-block {
+  position: relative;
+  margin: 0.5rem 0;
+}
+
+/* 语言标签 */
+.blog-detail__content .code-block__lang {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.15em 0.6em;
+  font-family: "仿宋", FangSong, serif;
+  font-size: 0.8rem;
+  color: inherit;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--pink-soft);
+}
+
+/* 代码块 */
+.blog-detail__content .code-block pre,
+.blog-detail__content pre {
+  font-family: "仿宋", FangSong, serif;
+  line-height: 2rem;
+  background: rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--pink-soft);
+  padding: 1em;
+  margin: 0;
+  overflow-x: auto;
+}
+.blog-detail__content pre code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-family: inherit;
+}
+
+/* 代码高亮暗色模式（VitePress / github-dark 同款） */
+
+html.dark .blog-detail__content .hljs-keyword,
+html.dark .blog-detail__content .hljs-selector-tag,
+html.dark .blog-detail__content .hljs-literal,
+html.dark .blog-detail__content .hljs-doctag,
+html.dark .blog-detail__content .hljs-section {
+  color: #ff7b72;
+}
+
+html.dark .blog-detail__content .hljs-string,
+html.dark .blog-detail__content .hljs-regexp,
+html.dark .blog-detail__content .hljs-addition,
+html.dark .blog-detail__content .hljs-attribute,
+html.dark .blog-detail__content .hljs-meta .hljs-string {
+  color: #a5d6ff;
+}
+
+html.dark .blog-detail__content .hljs-comment,
+html.dark .blog-detail__content .hljs-quote {
+  color: #8b949e;
+  font-style: italic;
+}
+
+html.dark .blog-detail__content .hljs-number,
+html.dark .blog-detail__content .hljs-built_in,
+html.dark .blog-detail__content .hljs-type,
+html.dark .blog-detail__content .hljs-symbol,
+html.dark .blog-detail__content .hljs-bullet,
+html.dark .blog-detail__content .hljs-link {
+  color: #79c0ff;
+}
+
+html.dark .blog-detail__content .hljs-title,
+html.dark .blog-detail__content .hljs-function .hljs-title,
+html.dark .blog-detail__content .hljs-class .hljs-title,
+html.dark .blog-detail__content .hljs-name,
+html.dark .blog-detail__content .hljs-attr,
+html.dark .blog-detail__content .hljs-selector-id,
+html.dark .blog-detail__content .hljs-selector-class {
+  color: #d2a8ff;
+}
+
+html.dark .blog-detail__content .hljs-params {
+  color: #ffa657;
+}
+
+html.dark .blog-detail__content .hljs-meta {
+  color: #ff7b72;
+}
+
+html.dark .blog-detail__content .hljs-variable,
+html.dark .blog-detail__content .hljs-template-variable {
+  color: #ffa657;
+}
+
+html.dark .blog-detail__content .hljs-deletion {
+  color: #ff7b72;
+  background: rgba(255, 123, 114, 0.15);
+}

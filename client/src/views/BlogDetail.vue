@@ -1,7 +1,9 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MarkdownIt from 'markdown-it'
+import hljs from 'highlight.js'
+import 'highlight.js/styles/github.css'
 
 const route = useRoute()
 
@@ -10,6 +12,16 @@ const md = new MarkdownIt({
   linkify: true,
   typographer: true,
 })
+
+/** 自定义 fence 渲染：在代码块上显示语言标签 */
+const rawFence = md.renderer.rules.fence!
+md.renderer.rules.fence = (tokens, idx, options, env, self): string => {
+  const token = tokens[idx]!
+  const lang = token.info.trim().split(/\s+/)[0] ?? ''
+  const body = rawFence(tokens, idx, options, env, self)
+  if (!lang) return body
+  return `<div class="code-block"><div class="code-block__lang">${md.utils.escapeHtml(lang)}</div>${body}</div>`
+}
 
 interface BlogDetail {
   id: number
@@ -40,6 +52,12 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+})
+
+/** DOM 更新后执行代码高亮 */
+watch(renderedContent, async () => {
+  await nextTick()
+  hljs.highlightAll()
 })
 </script>
 
