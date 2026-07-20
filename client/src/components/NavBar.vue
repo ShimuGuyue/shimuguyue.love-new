@@ -78,6 +78,9 @@ const userLabel = computed(() => {
   border-bottom: 1px solid var(--color-border);
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
   transition: background-color 0.3s, border-color 0.3s;
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .navbar-logo {
