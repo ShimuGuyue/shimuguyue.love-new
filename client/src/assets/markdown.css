@@ -1,0 +1,57 @@
+/* ── PinkFairy 主题 markdown 渲染样式 ──
+ *
+ *  迁移自 Typora 主题 PinkFairy
+ *  https://github.com/ShimuGuyue/typora-theme-PinkFairy
+ *
+*/
+
+/* =============================
+ *  主题颜色变量 & 全局字体
+ * ============================= */
+
+.blog-detail__content {
+  --pink-soft:        #FF9EC8;       /* 柔粉 */
+  --pink-hot:         #FF77CC;       /* 艳粉 */
+  --pink-light:       #ffaaff;       /* 浅粉 */
+  --pink-bright:      #FFEEF8;       /* 亮粉 */
+  --pink-peach:       #F39ACD;       /* 桃粉 */
+  --pink-tender:      #FFF0F5;       /* 嫩粉 */
+  --purple-herrscher: #6D6AA7;       /* 侵蚀紫 */
+
+  font-family: "仿宋", FangSong, serif;
+}
+
+/* =============================
+ *  标题样式
+ * ============================= */
+
+.blog-detail__content h1,
+.blog-detail__content h2,
+.blog-detail__content h3,
+.blog-detail__content h4,
+.blog-detail__content h5,
+.blog-detail__content h6 {
+  font-family: "微软雅黑", "Microsoft YaHei", sans-serif;
+  color: var(--pink-soft);
+  font-weight: 800;
+  line-height: 1;
+  margin: 1.5em 0 0.5em;
+}
+
+/* 标题装饰符号 */
+.blog-detail__content h1::before { content: "❀ "; }
+.blog-detail__content h1::after  { content: " ❀"; }
+.blog-detail__content h2::before { content: "➳ "; }
+.blog-detail__content h2::after  { content: " ➳"; }
+.blog-detail__content h3::before { content: "♥ ";  }
+.blog-detail__content h3::after  { content: " ♥";  }
+.blog-detail__content h4::before { content: "♪ ";  }
+.blog-detail__content h4::after  { content: " ♪";  }
+
+/* 标题字号 */
+.blog-detail__content h1 { font-size: 2.00rem; }
+.blog-detail__content h2 { font-size: 1.80rem; }
+.blog-detail__content h3 { font-size: 1.50rem; }
+.blog-detail__content h4 { font-size: 1.35rem; }
+.blog-detail__content h5 { font-size: 1.20rem; }
+.blog-detail__content h6 { font-size: 1.10rem; }
