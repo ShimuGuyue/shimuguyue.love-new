@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MarkdownIt from 'markdown-it'
+import taskLists from 'markdown-it-task-lists'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 
@@ -11,7 +12,7 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
-})
+}).use(taskLists, { enabled: true, label: true, labelAfter: true })
 
 /** 自定义 fence 渲染：在代码块上显示语言标签 */
 const rawFence = md.renderer.rules.fence!

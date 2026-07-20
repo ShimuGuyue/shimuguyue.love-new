@@ -346,3 +346,46 @@ html.dark .blog-detail__content .hljs-deletion {
 html.dark .blog-detail__content tr:nth-child(even) td {
   background-color: rgba(255, 255, 255, 0.05);
 }
+
+/* =============================
+ *  复选框样式
+ *  需要 markdown-it-task-lists 插件
+ * ============================= */
+
+.blog-detail__content input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  pointer-events: none;
+  position: relative;
+  width: 1.25rem;
+  height: 1.25rem;
+  margin: 0 0.3em 0 0;
+  vertical-align: middle;
+  border: 1px solid var(--pink-soft);
+  border-radius: 0.6rem;
+  background: transparent;
+  cursor: default;
+}
+
+.blog-detail__content .task-list-item {
+  list-style: none;
+}
+.blog-detail__content .task-list-item::before {
+  display: none !important;
+}
+.blog-detail__content .task-list-item input[type="checkbox"] {
+  position: absolute;
+  left: -4ch;
+}
+
+/* 选中复选框 */
+.blog-detail__content input[type="checkbox"]:checked::after {
+  content: "♪";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: var(--pink-hot);
+  font-size: 1.2rem;
+  line-height: 1;
+}
