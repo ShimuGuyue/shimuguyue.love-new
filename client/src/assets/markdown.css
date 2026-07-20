@@ -149,6 +149,60 @@ html.dark
 }
 
 /* =============================
+ *  列表样式
+ * ============================= */
+
+.blog-detail__content ul,
+.blog-detail__content ol {
+  list-style: none;
+  padding-left: 4ch;
+}
+.blog-detail__content li {
+  position: relative;
+}
+
+/* 外层无序列表标记 */
+.blog-detail__content > ul > li::before,
+.blog-detail__content > ol > li::before {
+  content: "❀";
+  position: absolute;
+  left: -4ch;
+  color: var(--pink-hot);
+}
+
+/* 外层有序列表计数器 */
+.blog-detail__content ol {
+  counter-reset: outer-ol-counter;
+}
+.blog-detail__content > ol > li::before {
+  counter-increment: outer-ol-counter;
+  content: counter(outer-ol-counter) ".";
+}
+
+/* 内层无序列表标记 */
+.blog-detail__content ul ul li::before,
+.blog-detail__content ol ul li::before {
+  content: "➳";
+  position: absolute;
+  left: -4ch;
+  color: var(--pink-hot);
+}
+
+/* 内层有序列表计数器（小写罗马数字） */
+.blog-detail__content ul ol,
+.blog-detail__content ol ol {
+  counter-reset: inner-ol-counter;
+}
+.blog-detail__content ul ol > li::before,
+.blog-detail__content ol ol > li::before {
+  counter-increment: inner-ol-counter;
+  content: counter(inner-ol-counter, lower-roman) ".";
+  position: absolute;
+  left: -4ch;
+  color: var(--pink-hot);
+}
+
+/* =============================
  *  代码样式
  * ============================= */
 
