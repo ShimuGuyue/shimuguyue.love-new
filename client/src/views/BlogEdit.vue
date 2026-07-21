@@ -12,30 +12,36 @@ const pathName = ref('')
 <template>
   <main class="blog-edit">
     <div class="blog-edit__layout">
-      <aside class="blog-edit__left glass">
-        <div class="blog-edit__field">
-          <label class="blog-edit__label">标题</label>
-          <input v-model="title" class="blog-edit__input" placeholder="博客标题" />
-        </div>
-        <div class="blog-edit__field">
-          <label class="blog-edit__label">描述</label>
-          <input v-model="description" class="blog-edit__input" placeholder="简短描述" />
-        </div>
-        <div class="blog-edit__field">
-          <label class="blog-edit__label">分类</label>
-          <input v-model="category" class="blog-edit__input" placeholder="分类名称" />
-        </div>
-        <div class="blog-edit__field">
-          <label class="blog-edit__label">标签</label>
-          <input v-model="tags" class="blog-edit__input" placeholder="用英文逗号分隔" />
-        </div>
-        <div class="blog-edit__field">
-          <label class="blog-edit__label">文件路径</label>
-          <div class="blog-edit__path-row">
-            <input v-model="pathCategory" class="blog-edit__input blog-edit__path-input" placeholder="分类目录" />
-            <span class="blog-edit__path-sep">/</span>
-            <input v-model="pathName" class="blog-edit__input blog-edit__path-input" placeholder="文件名" />
+      <aside class="blog-edit__left">
+        <div class="blog-edit__meta glass">
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">标题</label>
+            <input v-model="title" class="blog-edit__input" placeholder="博客标题" />
           </div>
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">描述</label>
+            <input v-model="description" class="blog-edit__input" placeholder="简短描述" />
+          </div>
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">分类</label>
+            <input v-model="category" class="blog-edit__input" placeholder="分类名称" />
+          </div>
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">标签</label>
+            <input v-model="tags" class="blog-edit__input" placeholder="用英文逗号分隔" />
+          </div>
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">文件路径</label>
+            <div class="blog-edit__path-row">
+              <input v-model="pathCategory" class="blog-edit__input blog-edit__path-input" placeholder="分类目录" />
+              <span class="blog-edit__path-sep">/</span>
+              <input v-model="pathName" class="blog-edit__input blog-edit__path-input" placeholder="文件名" />
+            </div>
+          </div>
+        </div>
+        <div class="blog-edit__actions">
+          <button class="blog-edit__btn blog-edit__btn--secondary">导入文件</button>
+          <button class="blog-edit__btn blog-edit__btn--primary">保存博客</button>
         </div>
       </aside>
       <section class="blog-edit__main glass">
@@ -64,6 +70,10 @@ const pathName = ref('')
 }
 
 /* ── 左侧 ── */
+.blog-edit__left {
+  display: flex;
+  flex-direction: column;
+}
 .blog-edit__field {
   margin-bottom: 16px;
 }
@@ -100,6 +110,34 @@ const pathName = ref('')
 .blog-edit__path-sep {
   color: var(--color-text-secondary);
   font-size: 0.9rem;
+}
+
+.blog-edit__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+.blog-edit__btn {
+  padding: 8px 0;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity var(--transition-speed);
+}
+.blog-edit__btn--primary {
+  color: #fff;
+  background-color: #FF77CC;
+}
+.blog-edit__btn--secondary {
+  color: var(--color-text-secondary);
+  background: rgba(0, 0, 0, 0.06);
+  border: 1px solid var(--color-border);
+}
+.blog-edit__btn:hover {
+  opacity: 0.85;
 }
 
 /* ── 中间 ── */
