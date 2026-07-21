@@ -91,6 +91,13 @@
   border: none;
   background: repeating-linear-gradient(
     to right,
+    var(--purple-herrscher) 0 3px,
+    transparent 3px 6px
+  );
+}
+html.dark .blog-detail__content hr {
+  background: repeating-linear-gradient(
+    to right,
     var(--pink-soft) 0 3px,
     transparent 3px 6px
   );
@@ -113,13 +120,22 @@
 
 /* 链接 */
 .blog-detail__content a {
-  color: var(--pink-light);
+  color: var(--purple-herrscher);
   word-wrap: break-word;
   text-decoration: underline solid;
   margin: 2px;
 }
 .blog-detail__content a:hover {
   color: var(--pink-hot);
+}
+html.dark .blog-detail__content a {
+  color: var(--pink-hot);
+  word-wrap: break-word;
+  text-decoration: underline solid;
+  margin: 2px;
+}
+html.dark .blog-detail__content a:hover {
+  color: var(--purple-herrscher);
 }
 
 /* 删除线：常态被侵蚀紫覆盖，hover 显示文字 */
