@@ -28,7 +28,7 @@ COMMENT ON COLUMN categories.name IS '类别名';
 
 CREATE TABLE blogs (
     id           SERIAL  PRIMARY KEY,
-    title        TEXT    NOT NULL UNIQUE,
+    title        TEXT    NOT NULL,
     description  TEXT    NOT NULL,
     update_time  DATE    NOT NULL DEFAULT CURRENT_DATE,
     content      TEXT    NOT NULL,
@@ -59,7 +59,7 @@ CREATE INDEX idx_blogs_category
 
 CREATE TABLE tags (
     id          SERIAL  PRIMARY KEY,
-    name        TEXT    NOT NULL UNIQUE,
+    name        TEXT    NOT NULL,
     category_id INT     NOT NULL REFERENCES categories(id) ON DELETE CASCADE
 );
 

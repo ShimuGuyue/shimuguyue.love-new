@@ -5,6 +5,8 @@
 
 #include "blog/blog_queries.h"
 
+#include <filesystem>
+#include <fstream>
 #include <sstream>
 
 namespace blog {
@@ -256,6 +258,126 @@ auto get_blog_by_file_path(
 
     txn.commit();
     return item;
+}
+
+auto save_blog(
+    pqxx::connection&              conn,
+    std::string_view               title,
+    std::string_view               description,
+    std::string_view               category_name,
+    const std::vector<std::string>& tag_names,
+    std::string_view               file_path,
+    std::string_view               content,
+    std::string_view               date,
+    std::string_view               md_output_path)
+ -> std::string
+{
+    pqxx::work txn{ conn };
+
+    // 0. 检查 file_path 是否已存在
+    {
+        auto r = txn.exec("SELECT 1 FROM blogs WHERE file_path = $1",
+                          pqxx::params{ std::string{file_path} });
+        if (!r.empty())
+            return "博客路径已存在";
+    }
+
+    // 1. 追加分类
+    int category_id{ 0 };
+    {
+        pqxx::result r = txn.exec(
+            "INSERT INTO categories (name) VALUES ($1) "
+            "ON CONFLICT (name) DO NOTHING RETURNING id",
+            pqxx::params{ std::string{category_name} });
+        if (!r.empty())
+        {
+            category_id = r[0]["id"].as<int>();
+        }
+        else
+        {
+            r = txn.exec("SELECT id FROM categories WHERE name = $1",
+                         pqxx::params{ std::string{category_name} });
+            if (r.empty())
+                return "创建分类失败";
+            category_id = r[0]["id"].as<int>();
+        }
+    }
+
+    // 2. 追加标签
+    std::vector<int> tag_ids;
+    for (const auto& tn : tag_names)
+    {
+        pqxx::result r = txn.exec(
+            "INSERT INTO tags (name, category_id) VALUES ($1, $2) "
+            "ON CONFLICT (name, category_id) DO NOTHING RETURNING id",
+            pqxx::params{ tn, category_id });
+        if (!r.empty())
+        {
+            tag_ids.push_back(r[0]["id"].as<int>());
+        }
+        else
+        {
+            r = txn.exec("SELECT id FROM tags WHERE name = $1 AND category_id = $2",
+                         pqxx::params{ tn, category_id });
+            if (!r.empty())
+                tag_ids.push_back(r[0]["id"].as<int>());
+        }
+    }
+
+    // 3. 插入博客条目
+    std::string fp{ file_path };
+    std::string dt{ date };
+
+    pqxx::result r = txn.exec(
+        "INSERT INTO blogs (title, description, content, file_path, "
+        "update_time, category_id) "
+        "VALUES ($1, $2, $3, $4, $5::date, $6) RETURNING id",
+        pqxx::params{ std::string{title}, std::string{description},
+                      std::string{content}, fp, dt, category_id });
+    if (r.empty())
+        return "创建博客记录失败";
+
+    const int blog_id = r[0]["id"].as<int>();
+
+    // 4. 关联博客标签
+    for (int tid : tag_ids)
+    {
+        txn.exec("INSERT INTO blog_tags (blog_id, tag_id) VALUES ($1, $2) "
+                 "ON CONFLICT DO NOTHING",
+                 pqxx::params{ blog_id, tid });
+    }
+
+    // 5. 写入 md 文件
+    {
+        std::ostringstream fm;
+        fm << "---\n";
+        fm << "title: " << title << "\n";
+        fm << "description: " << description << "\n";
+        fm << "category: " << category_name << "\n";
+        fm << "tags: [";
+        for (std::size_t i{ 0 }; i < tag_names.size(); ++i)
+        {
+            if (i > 0)
+                fm << ", ";
+            fm << tag_names[i];
+        }
+        fm << "]\n";
+        fm << "update_time: " << date << "\n";
+        fm << "file_path: " << file_path << "\n";
+        fm << "---\n\n";
+        fm << content;
+
+        std::filesystem::path out_path{ md_output_path };
+        std::filesystem::create_directories(out_path.parent_path());
+        std::ofstream ofs{ out_path, std::ios::binary };
+        if (!ofs)
+            return "写入文件失败！";
+        ofs << fm.str();
+         ofs.close();
+    }
+
+    txn.commit();
+    return {};
 }
 
 } // namespace blog

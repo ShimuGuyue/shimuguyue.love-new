@@ -6,6 +6,7 @@
 
 #include "db/connection.h"
 #include "http/routes.h"
+#include "md/markdown_parser.h"
 
 int main(int argc, char* argv[])
 {
@@ -15,6 +16,8 @@ int main(int argc, char* argv[])
     const int         port = http::read_port_or_exit();
 
     pqxx::connection conn = db::connect();
+
+    md::init();
 
     httplib::Server svr;
     http::setup_routes(svr, conn);

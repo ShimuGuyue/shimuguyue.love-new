@@ -41,6 +41,38 @@ async function importFile() {
   }
   input.click()
 }
+
+async function saveBlog() {
+  const tagList = tags.value.split(',').map(s => s.trim()).filter(Boolean)
+  const content = editorRef.value?.innerText || ''
+
+  if (!title.value || !description.value || !category.value ||
+      !pathCategory.value || !pathName.value || !content) {
+    alert('请填写所有字段后再保存')
+    return
+  }
+
+  const resp = await fetch('/api/blog/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: title.value,
+      description: description.value,
+      category: category.value,
+      tags: tagList,
+      file_path_category: pathCategory.value,
+      file_path_name: pathName.value,
+      content,
+    }),
+  })
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ error: '保存失败' }))
+    alert(err.error || '保存失败')
+    return
+  }
+  alert('保存成功')
+}
 </script>
 
 <template>
@@ -75,7 +107,7 @@ async function importFile() {
         </div>
         <div class="blog-edit__actions">
           <button class="blog-edit__btn blog-edit__btn--import" @click="importFile">导入文件</button>
-          <button class="blog-edit__btn blog-edit__btn--primary" :disabled="!canCreate">
+          <button class="blog-edit__btn blog-edit__btn--primary" :disabled="!canCreate" @click="saveBlog">
             {{ canCreate ? '保存博客' : '无权限' }}
           </button>
         </div>
