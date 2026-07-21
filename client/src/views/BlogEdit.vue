@@ -128,6 +128,7 @@ async function saveBlog() {
 <style scoped>
 .blog-edit {
   padding: 32px 24px 64px;
+  overflow: visible;
 }
 
 .blog-edit__layout {
@@ -136,12 +137,19 @@ async function saveBlog() {
   display: grid;
   grid-template-columns: 1fr 2fr 1fr;
   gap: 40px;
+  align-items: start;
+  overflow: visible;
 }
 
 /* ── 左侧 ── */
 .blog-edit__left {
   display: flex;
   flex-direction: column;
+  position: sticky;
+  top: 120px;
+  align-self: start;
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
 }
 .blog-edit__field {
   margin-bottom: 16px;
@@ -216,7 +224,7 @@ async function saveBlog() {
 /* ── 中间 ── */
 .blog-edit__content {
   width: 100%;
-  height: calc(100vh - 226px);
+  min-height: calc(100vh - 226px);
   padding: 16px;
   font-family: "仿宋", FangSong, serif;
   font-size: 1.05rem;
