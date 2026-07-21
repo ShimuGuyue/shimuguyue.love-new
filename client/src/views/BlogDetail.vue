@@ -196,7 +196,7 @@ watch(renderedContent, async () => {
 
 <style scoped>
 .blog-detail {
-  padding: 32px 24px 64px;
+  padding: 32px 24px 32px;
 }
 
 .blog-detail__status {
@@ -222,6 +222,7 @@ watch(renderedContent, async () => {
   position: sticky;
   top: 120px;
   align-self: start;
+  margin-top: 8px;
 }
 
 .blog-detail__title {
@@ -257,6 +258,7 @@ watch(renderedContent, async () => {
   align-self: start;
   max-height: calc(100vh - 120px);
   overflow-y: auto;
+  margin-top: 8px;
 }
 
 .toc-title {
