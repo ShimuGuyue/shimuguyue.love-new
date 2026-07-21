@@ -143,11 +143,6 @@ async function saveBlog() {
 
 /* ── 左侧 ── */
 .blog-edit__left {
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 120px;
-  align-self: start;
   max-height: calc(100vh - 140px);
   overflow-y: auto;
 }
@@ -227,9 +222,6 @@ async function saveBlog() {
   min-height: calc(100vh - 226px);
   padding: 16px;
   font-family: "仿宋", FangSong, serif;
-  font-size: 1.05rem;
-  line-height: 1.8;
-  color: var(--color-text);
   background: transparent;
   border: none;
   outline: none;
@@ -242,6 +234,7 @@ async function saveBlog() {
 </style>
 
 <style>
+@import "@/assets/blog-layout.css";
 @import "@/assets/pink-theme.css";
 @import "@/assets/glass.css";
 </style>

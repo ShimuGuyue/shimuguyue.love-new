@@ -1,0 +1,19 @@
+/* ── 博客页面共用样式 ── */
+
+/* 左侧 sticky */
+.blog-detail__side,
+.blog-edit__left {
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 120px;
+  align-self: start;
+}
+
+/* 中间正文 */
+.blog-detail__content,
+.blog-edit__content {
+  font-size: 1.05rem;
+  color: var(--color-text);
+  line-height: 1.8;
+}
