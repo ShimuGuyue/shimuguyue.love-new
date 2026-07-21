@@ -1,10 +1,43 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
+const title = ref('')
+const description = ref('')
+const category = ref('')
+const tags = ref('')
+const pathCategory = ref('')
+const pathName = ref('')
 </script>
 
 <template>
   <main class="blog-edit">
     <div class="blog-edit__layout">
-      <aside class="blog-edit__left"></aside>
+      <aside class="blog-edit__left glass">
+        <div class="blog-edit__field">
+          <label class="blog-edit__label">标题</label>
+          <input v-model="title" class="blog-edit__input" placeholder="博客标题" />
+        </div>
+        <div class="blog-edit__field">
+          <label class="blog-edit__label">描述</label>
+          <input v-model="description" class="blog-edit__input" placeholder="简短描述" />
+        </div>
+        <div class="blog-edit__field">
+          <label class="blog-edit__label">分类</label>
+          <input v-model="category" class="blog-edit__input" placeholder="分类名称" />
+        </div>
+        <div class="blog-edit__field">
+          <label class="blog-edit__label">标签</label>
+          <input v-model="tags" class="blog-edit__input" placeholder="用英文逗号分隔" />
+        </div>
+        <div class="blog-edit__field">
+          <label class="blog-edit__label">文件路径</label>
+          <div class="blog-edit__path-row">
+            <input v-model="pathCategory" class="blog-edit__input blog-edit__path-input" placeholder="分类目录" />
+            <span class="blog-edit__path-sep">/</span>
+            <input v-model="pathName" class="blog-edit__input blog-edit__path-input" placeholder="文件名" />
+          </div>
+        </div>
+      </aside>
       <section class="blog-edit__main glass">
         <div
           class="blog-edit__content"
@@ -30,12 +63,46 @@
   gap: 40px;
 }
 
-.blog-edit__title {
-  margin: 0 0 16px;
-  font-size: 1.3rem;
+/* ── 左侧 ── */
+.blog-edit__field {
+  margin-bottom: 16px;
+}
+.blog-edit__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+.blog-edit__input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 0.9rem;
   color: var(--color-text);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  outline: none;
+  transition: border-color var(--transition-speed);
+}
+.blog-edit__input:focus {
+  border-color: var(--pink-soft);
 }
 
+.blog-edit__path-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.blog-edit__path-input {
+  flex: 1;
+  min-width: 0;
+}
+.blog-edit__path-sep {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+/* ── 中间 ── */
 .blog-edit__content {
   width: 100%;
   height: calc(100vh - 226px);
