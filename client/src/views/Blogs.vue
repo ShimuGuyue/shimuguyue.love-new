@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, onMounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
+import { useRouter, useRoute, onBeforeRouteUpdate } from 'vue-router'
 
 const router = useRouter()
 const route = useRoute()
@@ -86,7 +86,7 @@ async function fetchTags() {
   } catch (e) { console.error('获取标签失败:', e) }
 }
 
-async function fetchBlogs() {
+async function fetchBlogs(skipSync = false) {
   const params = new URLSearchParams()
 
   if (selectedCategoryIds.value.length > 0) {
@@ -107,7 +107,9 @@ async function fetchBlogs() {
     const resp = await fetch('/api/blogs?' + params.toString())
     if (!resp.ok) throw new Error(`HTTP ${resp.status}`)
     blogs.value = await resp.json()
-    syncUrl()
+    if (!skipSync) {
+      syncUrl()
+    }
   } catch (e) {
     console.error('获取博客失败:', e)
     blogs.value = []
@@ -115,6 +117,23 @@ async function fetchBlogs() {
     loading.value = false
   }
 }
+
+onBeforeRouteUpdate(async (to, from) => {
+  const urlCatNames = parseNames(to.query.categories as string | undefined)
+  const urlTagNames = parseNames(to.query.tags as string | undefined)
+  searchQuery.value   = (to.query.q as string) || ''
+  categoryMulti.value = to.query.cm === '1'
+  tagMulti.value      = to.query.tm === '1'
+
+  selectedCategoryIds.value = urlCatNames
+    .map(n => categories.value.find(c => c.name === n)?.id)
+    .filter(Boolean) as number[]
+  selectedTagIds.value = urlTagNames
+    .map(n => tags.value.find(t => t.name === n)?.id)
+    .filter(Boolean) as number[]
+
+  await fetchBlogs(true)
+})
 
 // ── URL 同步 ──
 
