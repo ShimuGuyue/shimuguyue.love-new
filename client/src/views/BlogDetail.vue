@@ -3,6 +3,7 @@ import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import MarkdownIt from 'markdown-it'
 import taskLists from 'markdown-it-task-lists'
+import markdownItGitHubAlerts from 'markdown-it-github-alerts'
 import hljs from 'highlight.js'
 import 'highlight.js/styles/github.css'
 import katex from 'katex'
@@ -14,7 +15,9 @@ const md = new MarkdownIt({
   html: true,
   linkify: true,
   typographer: true,
-}).use(taskLists, { enabled: true, label: true, labelAfter: true })
+})
+  .use(taskLists, { enabled: true, label: true, labelAfter: true })
+  .use(markdownItGitHubAlerts)
 
 md.enable('strikethrough')
 
