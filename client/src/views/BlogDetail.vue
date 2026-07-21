@@ -164,7 +164,7 @@ watch(renderedContent, async () => {
       <article v-if="blog.content" class="blog-detail__content glass" v-html="renderedContent"></article>
 
       <!-- 右侧：目录 -->
-      <nav v-if="headings.length" class="blog-detail__toc">
+      <nav v-if="headings.length" class="blog-detail__toc glass">
         <h4 class="toc-title">目录</h4>
         <ul class="toc-list">
           <template v-for="h in headings" :key="h.slug">
@@ -189,6 +189,7 @@ watch(renderedContent, async () => {
           </template>
         </ul>
       </nav>
+      <div v-else class="blog-detail__right-placeholder"></div>
     </div>
   </main>
 </template>
@@ -252,7 +253,7 @@ watch(renderedContent, async () => {
 /* ── 右侧目录 ── */
 .blog-detail__toc {
   position: sticky;
-  top: 100px;
+  top: 120px;
   align-self: start;
   max-height: calc(100vh - 120px);
   overflow-y: auto;
