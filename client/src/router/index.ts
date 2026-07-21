@@ -8,6 +8,7 @@ import LoginKey from '@/views/LoginKey.vue'
 import LoginPassword from '@/views/LoginPassword.vue'
 import Profile from '@/views/Profile.vue'
 import BlogDetail from '@/views/BlogDetail.vue'
+import BlogEdit from '@/views/BlogEdit.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -20,6 +21,7 @@ const router = createRouter({
     { path: '/login/key', name: 'login-key', component: LoginKey },
     { path: '/login/password', name: 'login-password', component: LoginPassword },
     { path: '/profile', name: 'profile', component: Profile },
+    { path: '/blog-edit/new', name: 'blog-edit-new', component: BlogEdit },
     { path: '/blogs/:file_path(.*)', name: 'blog-detail', component: BlogDetail },
   ],
 })
