@@ -41,6 +41,15 @@ body {
   color: var(--color-text);
   transition: background-color var(--transition-speed), color var(--transition-speed);
 }
+
+/* 隐藏滚动条 */
+html {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+html::-webkit-scrollbar {
+  display: none;
+}
 </style>
 
 <style>

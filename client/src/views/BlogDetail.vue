@@ -210,7 +210,7 @@ watch(renderedContent, async () => {
   max-width: 1400px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 3fr 1fr;
+  grid-template-columns: 300px 1fr 300px;;
   gap: 40px;
 }
 
