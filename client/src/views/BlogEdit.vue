@@ -7,6 +7,36 @@ const category = ref('')
 const tags = ref('')
 const pathCategory = ref('')
 const pathName = ref('')
+const editorRef = ref<HTMLDivElement | null>(null)
+
+async function importFile() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.md,.txt'
+  input.onchange = async () => {
+    const file = input.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    try {
+      const resp = await fetch('/api/blog/parse', { method: 'POST', body: text })
+      if (!resp.ok) throw new Error(`${resp.status}`)
+      const data = await resp.json()
+      title.value = data.title || ''
+      description.value = data.description || ''
+      category.value = data.category || ''
+      tags.value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '')
+      pathCategory.value = data.file_path_category || ''
+      pathName.value = data.file_path_name || ''
+      if (editorRef.value) {
+        editorRef.value.innerText = data.content || ''
+      }
+    } catch (e) {
+      // 后端不可用时本地解析
+      alert('导入失败: ' + e)
+    }
+  }
+  input.click()
+}
 </script>
 
 <template>
@@ -40,12 +70,13 @@ const pathName = ref('')
           </div>
         </div>
         <div class="blog-edit__actions">
-          <button class="blog-edit__btn blog-edit__btn--secondary">导入文件</button>
+          <button class="blog-edit__btn blog-edit__btn--secondary" @click="importFile">导入文件</button>
           <button class="blog-edit__btn blog-edit__btn--primary">保存博客</button>
         </div>
       </aside>
       <section class="blog-edit__main glass">
         <div
+          ref="editorRef"
           class="blog-edit__content"
           contenteditable="true"
           placeholder="在此编辑博客 Markdown 文本..."

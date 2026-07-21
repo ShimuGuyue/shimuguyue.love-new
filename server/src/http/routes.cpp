@@ -6,6 +6,7 @@
 #include "http/routes.h"
 #include "auth/login.h"
 #include "blog/blog_queries.h"
+#include "md/markdown_parser.h"
 
 #include <cstdlib>
 #include <iostream>
@@ -369,6 +370,17 @@ void setup_routes(httplib::Server& svr, pqxx::connection& conn)
                 ? nlohmann::json(*blog->category) : nlohmann::json(nullptr);
             item["tags"]        = blog->tags;
             res.set_content(item.dump(), "application/json");
+        }
+    );
+
+    // POST /api/blog/parse — 解析 Markdown frontmatter (委托 md::parse_frontmatter)
+    svr.Post("/api/blog/parse",
+        [allowed](const auto& req, auto& res)
+        {
+            res.set_header("Access-Control-Allow-Origin", allowed);
+            res.set_header("Content-Type", "application/json");
+            auto result = md::parse_frontmatter(req.body);
+            res.set_content(result.dump(), "application/json");
         }
     );
 }
