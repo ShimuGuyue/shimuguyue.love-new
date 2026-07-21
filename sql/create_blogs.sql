@@ -60,7 +60,8 @@ CREATE INDEX idx_blogs_category
 CREATE TABLE tags (
     id          SERIAL  PRIMARY KEY,
     name        TEXT    NOT NULL,
-    category_id INT     NOT NULL REFERENCES categories(id) ON DELETE CASCADE
+    category_id INT     NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    UNIQUE (name, category_id)
 );
 
 COMMENT ON TABLE  tags IS '标签表';
