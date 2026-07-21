@@ -164,7 +164,7 @@ watch(renderedContent, async () => {
       <article v-if="blog.content" class="blog-detail__content glass" v-html="renderedContent"></article>
 
       <!-- 右侧：目录 -->
-      <nav v-if="headings.length" class="blog-detail__toc">
+      <nav v-if="headings.length" class="blog-detail__toc glass">
         <h4 class="toc-title">目录</h4>
         <ul class="toc-list">
           <template v-for="h in headings" :key="h.slug">
@@ -189,13 +189,14 @@ watch(renderedContent, async () => {
           </template>
         </ul>
       </nav>
+      <div v-else class="blog-detail__right-placeholder"></div>
     </div>
   </main>
 </template>
 
 <style scoped>
 .blog-detail {
-  padding: 32px 24px 64px;
+  padding: 32px 24px 32px;
 }
 
 .blog-detail__status {
@@ -209,7 +210,7 @@ watch(renderedContent, async () => {
   max-width: 1400px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 3fr 1fr;
+  grid-template-columns: 300px 1fr 300px;;
   gap: 40px;
 }
 
@@ -221,6 +222,7 @@ watch(renderedContent, async () => {
   position: sticky;
   top: 120px;
   align-self: start;
+  margin-top: 8px;
 }
 
 .blog-detail__title {
@@ -252,10 +254,11 @@ watch(renderedContent, async () => {
 /* ── 右侧目录 ── */
 .blog-detail__toc {
   position: sticky;
-  top: 100px;
+  top: 120px;
   align-self: start;
   max-height: calc(100vh - 120px);
   overflow-y: auto;
+  margin-top: 8px;
 }
 
 .toc-title {
