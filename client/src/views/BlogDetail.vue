@@ -220,7 +220,7 @@ watch(renderedContent, async () => {
   flex-direction: column;
   gap: 16px;
   position: sticky;
-  top: 120px;
+  top: 112px;
   align-self: start;
 }
 
@@ -253,9 +253,9 @@ watch(renderedContent, async () => {
 /* ── 右侧目录 ── */
 .blog-detail__toc {
   position: sticky;
-  top: 120px;
+  top: 112px;
   align-self: start;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 112px);
   overflow-y: auto;
 }
 

@@ -16,6 +16,10 @@ import NavBar from '@/components/NavBar.vue'
   box-sizing: border-box;
 }
 
+html {
+  scrollbar-gutter: stable;
+}
+
 :root {
   --color-nav-bg: #fff;
   --color-bg: #f5f5f5;
