@@ -219,12 +219,7 @@ watch(renderedContent, async () => {
 
 /* ── 左侧 ── */
 .blog-detail__side {
-  display: flex;
-  flex-direction: column;
   gap: 16px;
-  position: sticky;
-  top: 120px;
-  align-self: start;
   margin-top: 8px;
 }
 
@@ -249,9 +244,7 @@ watch(renderedContent, async () => {
 
 /* ── 中间正文 ── */
 .blog-detail__content {
-  font-size: 1.05rem;
-  color: var(--color-text);
-  line-height: 1.8;
+  min-height: calc(100vh - 177px);
 }
 
 /* ── 右侧目录 ── */
@@ -332,6 +325,7 @@ watch(renderedContent, async () => {
 </style>
 
 <style>
+@import "@/assets/blog-layout.css";
 @import "@/assets/blog.css";
 @import "@/assets/glass.css";
 @import "@/assets/markdown.css";

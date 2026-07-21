@@ -5,21 +5,7 @@
  *
 */
 
-/* =============================
- *  主题颜色变量 & 全局字体
- * ============================= */
-
-.blog-detail__content {
-  --pink-soft:        #FF9EC8;       /* 柔粉 */
-  --pink-hot:         #FF77CC;       /* 艳粉 */
-  --pink-light:       #ffaaff;       /* 浅粉 */
-  --pink-bright:      #FFEEF8;       /* 亮粉 */
-  --pink-peach:       #F39ACD;       /* 桃粉 */
-  --pink-tender:      #FFF0F5;       /* 嫩粉 */
-  --purple-herrscher: #6D6AA7;       /* 侵蚀紫 */
-
-  font-family: "仿宋", FangSong, serif;
-}
+@import "@/assets/pink-theme.css";
 
 /* =============================
  *  标题样式

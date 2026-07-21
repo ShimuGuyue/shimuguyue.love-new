@@ -12,6 +12,7 @@ find_package(libpqxx           CONFIG REQUIRED)
 find_package(unofficial-sodium CONFIG REQUIRED)
 find_package(httplib           CONFIG REQUIRED)
 find_package(nlohmann_json     CONFIG REQUIRED)
+find_package(yaml-cpp          CONFIG REQUIRED)
 
 # 源文件
 add_executable(${PROJECT_NAME}
@@ -21,6 +22,7 @@ add_executable(${PROJECT_NAME}
     src/auth/login.cpp
     src/blog/blog_queries.cpp
     src/http/routes.cpp
+    src/md/markdown_parser.cpp
 )
 
 # 头文件
@@ -36,6 +38,7 @@ target_link_libraries(${PROJECT_NAME}
         unofficial-sodium::sodium
         httplib::httplib
         nlohmann_json::nlohmann_json
+        yaml-cpp::yaml-cpp
 )
 
 # ---------- 安装规则 ----------

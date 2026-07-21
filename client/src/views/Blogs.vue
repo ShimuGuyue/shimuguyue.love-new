@@ -224,6 +224,9 @@ onMounted(async () => {
 
 <template>
   <main class="blogs-page">
+    <div class="blogs-top">
+      <button class="new-blog-btn" @click="router.push('/blog-edit/new')">新建博客</button>
+    </div>
     <!-- ── 筛选器 ── -->
     <section class="filter-bar">
       <!-- 分类筛选 -->
@@ -307,14 +310,35 @@ onMounted(async () => {
   padding: 24px 32px 48px;
 }
 
-/* ── 筛选器 ── */
+/* ── 新建按钮 ── */
+.blogs-top {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
 
+.new-blog-btn {
+  padding: 10px 20px;
+  font-size: 0.9rem;
+  color: #fff;
+  background-color: #FF77CC;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity var(--transition-speed);
+}
+
+/* ── 筛选器 ── */
 .filter-bar {
   background-color: var(--color-card-bg, var(--color-nav-bg));
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 20px 24px;
   margin-bottom: 28px;
+}
+.new-blog-btn:hover {
+  opacity: 0.85;
 }
 
 .filter-row {

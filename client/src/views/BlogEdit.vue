@@ -1,0 +1,240 @@
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
+const canCreate = computed(() => auth.permissions.includes('create'))
+
+const title = ref('')
+const description = ref('')
+const category = ref('')
+const tags = ref('')
+const pathCategory = ref('')
+const pathName = ref('')
+const editorRef = ref<HTMLDivElement | null>(null)
+
+async function importFile() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = '.md,.txt'
+  input.onchange = async () => {
+    const file = input.files?.[0]
+    if (!file) return
+    const text = await file.text()
+    try {
+      const resp = await fetch('/api/blog/parse', { method: 'POST', body: text })
+      if (!resp.ok) throw new Error(`${resp.status}`)
+      const data = await resp.json()
+      title.value = data.title || ''
+      description.value = data.description || ''
+      category.value = data.category || ''
+      tags.value = Array.isArray(data.tags) ? data.tags.join(', ') : (data.tags || '')
+      pathCategory.value = data.file_path_category || ''
+      pathName.value = data.file_path_name || ''
+      if (editorRef.value) {
+        editorRef.value.innerText = data.content || ''
+      }
+    } catch (e) {
+      // 后端不可用时本地解析
+      alert('导入失败: ' + e)
+    }
+  }
+  input.click()
+}
+
+async function saveBlog() {
+  const tagList = tags.value.split(',').map(s => s.trim()).filter(Boolean)
+  const content = editorRef.value?.innerText || ''
+
+  if (!title.value || !description.value || !category.value ||
+      !pathCategory.value || !pathName.value || !content) {
+    alert('请填写所有字段后再保存')
+    return
+  }
+
+  const resp = await fetch('/api/blog/save', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: title.value,
+      description: description.value,
+      category: category.value,
+      tags: tagList,
+      file_path_category: pathCategory.value,
+      file_path_name: pathName.value,
+      content,
+    }),
+  })
+
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ error: '保存失败' }))
+    alert(err.error || '保存失败')
+    return
+  }
+  alert('保存成功')
+}
+</script>
+
+<template>
+  <main class="blog-edit">
+    <div class="blog-edit__layout">
+      <aside class="blog-edit__left">
+        <div class="blog-edit__meta glass">
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">标题</label>
+            <input v-model="title" class="blog-edit__input" placeholder="博客标题" />
+          </div>
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">描述</label>
+            <input v-model="description" class="blog-edit__input" placeholder="简短描述" />
+          </div>
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">分类</label>
+            <input v-model="category" class="blog-edit__input" placeholder="分类名称" />
+          </div>
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">标签</label>
+            <input v-model="tags" class="blog-edit__input" placeholder="用英文逗号分隔" />
+          </div>
+          <div class="blog-edit__field">
+            <label class="blog-edit__label">文件路径</label>
+            <div class="blog-edit__path-row">
+              <input v-model="pathCategory" class="blog-edit__input blog-edit__path-input" placeholder="分类目录" />
+              <span class="blog-edit__path-sep">/</span>
+              <input v-model="pathName" class="blog-edit__input blog-edit__path-input" placeholder="文件名" />
+            </div>
+          </div>
+        </div>
+        <div class="blog-edit__actions">
+          <button class="blog-edit__btn blog-edit__btn--import" @click="importFile">导入文件</button>
+          <button class="blog-edit__btn blog-edit__btn--primary" :disabled="!canCreate" @click="saveBlog">
+            {{ canCreate ? '保存博客' : '无权限' }}
+          </button>
+        </div>
+      </aside>
+      <section class="blog-edit__main glass">
+        <div
+          ref="editorRef"
+          class="blog-edit__content"
+          contenteditable="true"
+          placeholder="在此编辑博客 Markdown 文本..."
+        ></div>
+      </section>
+      <aside class="blog-edit__right"></aside>
+    </div>
+  </main>
+</template>
+
+<style scoped>
+.blog-edit {
+  padding: 32px 24px 64px;
+  overflow: visible;
+}
+
+.blog-edit__layout {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 40px;
+  align-items: start;
+  overflow: visible;
+}
+
+/* ── 左侧 ── */
+.blog-edit__left {
+  max-height: calc(100vh - 140px);
+  overflow-y: auto;
+}
+.blog-edit__field {
+  margin-bottom: 16px;
+}
+.blog-edit__label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+.blog-edit__input {
+  width: 100%;
+  padding: 6px 10px;
+  font-size: 0.9rem;
+  color: var(--color-text);
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  outline: none;
+  transition: border-color var(--transition-speed);
+}
+.blog-edit__input:focus {
+  border-color: var(--pink-soft);
+}
+
+.blog-edit__path-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.blog-edit__path-input {
+  flex: 1;
+  min-width: 0;
+}
+.blog-edit__path-sep {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.blog-edit__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 16px;
+}
+.blog-edit__btn {
+  padding: 8px 0;
+  font-size: 0.85rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: opacity var(--transition-speed);
+}
+.blog-edit__btn--primary {
+  color: #fff;
+  background-color: var(--pink-hot);
+}
+.blog-edit__btn--import {
+  color: #fff;
+  background: var(--pink-soft);
+  border: 1px solid var(--color-border);
+}
+.blog-edit__btn--primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.blog-edit__btn:hover:not(:disabled) {
+  opacity: 0.85;
+}
+
+/* ── 中间 ── */
+.blog-edit__content {
+  width: 100%;
+  min-height: calc(100vh - 226px);
+  padding: 16px;
+  font-family: "仿宋", FangSong, serif;
+  background: transparent;
+  border: none;
+  outline: none;
+}
+.blog-edit__content:empty::before {
+  content: attr(placeholder);
+  color: #999;
+  pointer-events: none;
+}
+</style>
+
+<style>
+@import "@/assets/blog-layout.css";
+@import "@/assets/pink-theme.css";
+@import "@/assets/glass.css";
+</style>

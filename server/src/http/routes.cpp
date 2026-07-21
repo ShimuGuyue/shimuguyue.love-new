@@ -6,8 +6,11 @@
 #include "http/routes.h"
 #include "auth/login.h"
 #include "blog/blog_queries.h"
+#include "md/markdown_parser.h"
 
 #include <cstdlib>
+#include <ctime>
+#include <filesystem>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -287,6 +290,70 @@ static void handle_get_blogs(
     res.set_content(arr.dump(), "application/json");
 }
 
+/**
+ * @brief 处理 POST /api/blog/save 请求。
+ */
+static void handle_blog_save(
+    const httplib::Request& req,
+    httplib::Response&      res,
+    pqxx::connection&        conn,
+    const std::string&       allowed)
+{
+    std::lock_guard<std::mutex> lock{ g_db_mutex };
+    res.set_header("Access-Control-Allow-Origin", allowed);
+    res.set_header("Content-Type", "application/json");
+
+    const auto body = nlohmann::json::parse(req.body, nullptr, false);
+    if (body.is_discarded()) {
+        res.status = 400;
+        res.set_content(R"({"error":"无效的 JSON"})", "application/json");
+        return;
+    }
+
+    const auto title       = body.value("title", "");
+    const auto description = body.value("description", "");
+    const auto category    = body.value("category", "");
+    const auto content     = body.value("content", "");
+    const auto pathCat     = body.value("file_path_category", "");
+    const auto pathName    = body.value("file_path_name", "");
+    const auto tagsJson    = body.value("tags", nlohmann::json::array());
+
+    if (title.empty() || description.empty() || category.empty() ||
+        pathCat.empty() || pathName.empty() || content.empty()) {
+        res.status = 400;
+        res.set_content(R"({"error":"所有字段均为必填"})", "application/json");
+        return;
+    }
+
+    std::vector<std::string> tagList;
+    if (tagsJson.is_array())
+        for (const auto& t : tagsJson)
+            if (t.is_string()) tagList.push_back(t.get<std::string>());
+
+    const std::string fp = std::string{pathCat} + "/" + std::string{pathName};
+
+    std::time_t now = std::time(nullptr);
+    char buf[16];
+    std::strftime(buf, sizeof buf, "%Y-%m-%d", std::localtime(&now));
+
+    const std::filesystem::path outPath =
+        std::filesystem::path{ md::doc_path() } / "blogs" / (fp + ".md");
+
+    const auto err = blog::save_blog(
+        conn, title, description, category, tagList, fp,
+        content, buf, outPath.string());
+
+    if (!err.empty()) {
+        res.status = 500;
+        nlohmann::json j;
+        j["error"] = err;
+        res.set_content(j.dump(), "application/json");
+        return;
+    }
+
+    res.set_content(R"({"ok":true})", "application/json");
+}
+
 // ── 路由注册 ──
 
 void setup_routes(httplib::Server& svr, pqxx::connection& conn)
@@ -369,6 +436,25 @@ void setup_routes(httplib::Server& svr, pqxx::connection& conn)
                 ? nlohmann::json(*blog->category) : nlohmann::json(nullptr);
             item["tags"]        = blog->tags;
             res.set_content(item.dump(), "application/json");
+        }
+    );
+
+    // POST /api/blog/parse — 解析 Markdown frontmatter (委托 md::parse_frontmatter)
+    svr.Post("/api/blog/parse",
+        [allowed](const auto& req, auto& res)
+        {
+            res.set_header("Access-Control-Allow-Origin", allowed);
+            res.set_header("Content-Type", "application/json");
+            auto result = md::parse_frontmatter(req.body);
+            res.set_content(result.dump(), "application/json");
+        }
+    );
+
+    // POST /api/blog/save — 保存博客
+    svr.Post("/api/blog/save",
+        [&conn, allowed](const auto& req, auto& res)
+        {
+            handle_blog_save(req, res, conn, allowed);
         }
     );
 }
