@@ -1,5 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+
+const auth = useAuthStore()
+const canCreate = computed(() => auth.permissions.includes('create'))
 
 const title = ref('')
 const description = ref('')
@@ -70,8 +74,10 @@ async function importFile() {
           </div>
         </div>
         <div class="blog-edit__actions">
-          <button class="blog-edit__btn blog-edit__btn--secondary" @click="importFile">导入文件</button>
-          <button class="blog-edit__btn blog-edit__btn--primary">保存博客</button>
+          <button class="blog-edit__btn blog-edit__btn--import" @click="importFile">导入文件</button>
+          <button class="blog-edit__btn blog-edit__btn--primary" :disabled="!canCreate">
+            {{ canCreate ? '保存博客' : '无权限' }}
+          </button>
         </div>
       </aside>
       <section class="blog-edit__main glass">
@@ -160,14 +166,18 @@ async function importFile() {
 }
 .blog-edit__btn--primary {
   color: #fff;
-  background-color: #FF77CC;
+  background-color: var(--pink-hot);
 }
-.blog-edit__btn--secondary {
-  color: var(--color-text-secondary);
-  background: rgba(0, 0, 0, 0.06);
+.blog-edit__btn--import {
+  color: #fff;
+  background: var(--pink-soft);
   border: 1px solid var(--color-border);
 }
-.blog-edit__btn:hover {
+.blog-edit__btn--primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.blog-edit__btn:hover:not(:disabled) {
   opacity: 0.85;
 }
 
@@ -192,5 +202,6 @@ async function importFile() {
 </style>
 
 <style>
+@import "@/assets/pink-theme.css";
 @import "@/assets/glass.css";
 </style>
