@@ -5,12 +5,13 @@
 
 #include "http/routes.h"
 #include "auth/login.h"
+#include "auth/session.h"
 #include "blog/blog_queries.h"
 #include "md/markdown_parser.h"
 
+#include <algorithm>
 #include <cstdlib>
 #include <ctime>
-#include <filesystem>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -77,7 +78,7 @@ static void handle_cors(httplib::Response& res, const std::string& allowed)
 {
     res.set_header("Access-Control-Allow-Origin",  allowed);
     res.set_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-    res.set_header("Access-Control-Allow-Headers", "Content-Type");
+    res.set_header("Access-Control-Allow-Headers", "Content-Type, Authorization");
     res.status = 204;
 }
 
@@ -121,7 +122,7 @@ static void handle_login_key(
     resp["username"] = result->username.has_value()
         ? nlohmann::json(*result->username)
         : nlohmann::json(nullptr);
-    resp["permissions"] = result->permissions;
+    resp["token"] = auth::create_session(conn, result->id, result->permissions);
     res.set_content(resp.dump(), "application/json");
 }
 
@@ -162,7 +163,7 @@ static void handle_login_password(
     nlohmann::json resp;
     resp["id"]          = result->id;
     resp["username"]    = *result->username;
-    resp["permissions"] = result->permissions;
+    resp["token"]       = auth::create_session(conn, result->id, result->permissions);
     res.set_content(resp.dump(), "application/json");
 }
 
@@ -310,6 +311,30 @@ static void handle_blog_save(
         return;
     }
 
+    // Session 验证
+    std::string token;
+    if (req.has_header("Authorization")) {
+        const auto& auth_hdr = req.get_header_value("Authorization");
+        constexpr std::string_view PREFIX = "Bearer ";
+        if (auth_hdr.size() > PREFIX.size() &&
+            auth_hdr.compare(0, PREFIX.size(), PREFIX) == 0)
+            token = auth_hdr.substr(PREFIX.size());
+    }
+    const auto session = auth::validate_session(conn, token);
+    if (!session) {
+        res.status = 401;
+        res.set_content(R"({"error":"未登录或会话已过期"})", "application/json");
+        return;
+    }
+
+    // 权限检查
+    const auto& perms = session->permissions;
+    if (std::find(perms.begin(), perms.end(), "create") == perms.end()) {
+        res.status = 403;
+        res.set_content(R"({"error":"当前用户无 create 权限"})", "application/json");
+        return;
+    }
+
     const auto title       = body.value("title", "");
     const auto description = body.value("description", "");
     const auto category    = body.value("category", "");
@@ -378,6 +403,25 @@ void setup_routes(httplib::Server& svr, pqxx::connection& conn)
         [&conn, allowed](const auto& req, auto& res)
         {
             handle_login_password(req, res, conn, allowed);
+        }
+    );
+
+    svr.Get("/api/user/permissions",
+        [&conn, allowed](const auto& req, auto& res)
+        {
+            std::lock_guard<std::mutex> lock{ g_db_mutex };
+            res.set_header("Access-Control-Allow-Origin", allowed);
+            res.set_header("Content-Type", "application/json");
+
+            if (!req.has_param("user_id")) {
+                res.status = 400;
+                res.set_content(R"({"error":"缺少 user_id 参数"})", "application/json");
+                return;
+            }
+
+            const int uid = std::stoi(req.get_param_value("user_id"));
+            auto perms = auth::get_permissions(conn, uid);
+            res.set_content(nlohmann::json{{"permissions", perms}}.dump(), "application/json");
         }
     );
 
