@@ -4,8 +4,10 @@
  */
 
 #include "blog/blog_queries.h"
+#include "md/markdown_parser.h"
 
 #include <filesystem>
+#include <format>
 #include <fstream>
 #include <sstream>
 
@@ -266,23 +268,47 @@ auto save_blog(
     std::string_view               description,
     std::string_view               category_name,
     const std::vector<std::string>& tag_names,
-    std::string_view               file_path,
+    std::string_view               file_path_category,
+    std::string_view               file_path_name,
     std::string_view               content,
-    std::string_view               date,
-    std::string_view               md_output_path)
+    std::string_view               date)
  -> std::string
 {
+    // 元信息特殊字符校验
+    {
+        constexpr std::string_view BAD = "<>&\"'\\|*?/";
+
+        if (title.find_first_of(BAD) != std::string::npos)
+            return "标题 含有特殊字符（< > & \" ' \\ | * ? /）";
+        if (description.find_first_of(BAD) != std::string::npos)
+            return "描述 含有特殊字符（< > & \" ' \\ | * ? /）";
+        if (category_name.find_first_of(BAD) != std::string::npos)
+            return "分类 含有特殊字符（< > & \" ' \\ | * ? /）";
+        if (file_path_category.find_first_of(BAD) != std::string::npos ||
+            file_path_name.find_first_of(BAD) != std::string::npos)
+            return "文件路径 含有特殊字符（< > & \" ' \\ | * ? /）";
+        if (file_path_category.find("..") != std::string::npos ||
+            file_path_name.find("..") != std::string::npos)
+            return "文件路径 含有非法字符 \"..\"";
+        for (const auto& tag : tag_names) {
+            if (tag.find_first_of(BAD) != std::string::npos)
+                return "标签 含有特殊字符（< > & \" ' \\ | * ? /）";
+        }
+    }
+
+    const std::string file_path = std::string{file_path_category} + "/" + std::string{file_path_name};
+
     pqxx::work txn{ conn };
 
-    // 0. 检查 file_path 是否已存在
+    // 检查 file_path 是否已存在
     {
         auto r = txn.exec("SELECT 1 FROM blogs WHERE file_path = $1",
-                          pqxx::params{ std::string{file_path} });
+                          pqxx::params{ file_path });
         if (!r.empty())
             return "博客路径已存在";
     }
 
-    // 1. 追加分类
+    // 追加分类
     int category_id{ 0 };
     {
         pqxx::result r = txn.exec(
@@ -303,7 +329,7 @@ auto save_blog(
         }
     }
 
-    // 2. 追加标签
+    // 追加标签
     std::vector<int> tag_ids;
     for (const auto& tn : tag_names)
     {
@@ -324,8 +350,7 @@ auto save_blog(
         }
     }
 
-    // 3. 插入博客条目
-    std::string fp{ file_path };
+    // 插入博客条目
     std::string dt{ date };
 
     pqxx::result r = txn.exec(
@@ -333,13 +358,13 @@ auto save_blog(
         "update_time, category_id) "
         "VALUES ($1, $2, $3, $4, $5::date, $6) RETURNING id",
         pqxx::params{ std::string{title}, std::string{description},
-                      std::string{content}, fp, dt, category_id });
+                      std::string{content}, file_path, dt, category_id });
     if (r.empty())
         return "创建博客记录失败";
 
     const int blog_id = r[0]["id"].as<int>();
 
-    // 4. 关联博客标签
+    // 关联博客标签
     for (int tid : tag_ids)
     {
         txn.exec("INSERT INTO blog_tags (blog_id, tag_id) VALUES ($1, $2) "
@@ -347,7 +372,7 @@ auto save_blog(
                  pqxx::params{ blog_id, tid });
     }
 
-    // 5. 写入 md 文件
+    // 写入 md 文件
     {
         std::ostringstream fm;
         fm << "---\n";
@@ -367,7 +392,8 @@ auto save_blog(
         fm << "---\n\n";
         fm << content;
 
-        std::filesystem::path out_path{ md_output_path };
+        std::filesystem::path out_path{ std::format("{}/blogs/{}.md",
+                                                    md::doc_path(), file_path) };
         std::filesystem::create_directories(out_path.parent_path());
         std::ofstream ofs{ out_path, std::ios::binary };
         if (!ofs)

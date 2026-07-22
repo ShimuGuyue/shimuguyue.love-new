@@ -100,15 +100,15 @@ struct BlogQuery
 
 /**
  * @brief 保存博客及关联元数据，同时写入 .md 文件。
- * @param conn           数据库连接。
- * @param title          标题。
- * @param description    描述。
- * @param category_name  分类名（不存在则新建）。
- * @param tag_names      标签名列表（不存在则新建）。
- * @param file_path      博客文件相对路径。
- * @param content        博客正文（Markdown）。
- * @param date           更新日期（YYYY-MM-DD 格式）。
- * @param md_output_path  完整的 .md 输出路径（包含 $DOC_PATH 前缀）。
+ * @param conn                数据库连接。
+ * @param title               标题。
+ * @param description         描述。
+ * @param category_name       分类名（不存在则新建）。
+ * @param tag_names           标签名列表（不存在则新建）。
+ * @param file_path_category  文件路径分类目录部分。
+ * @param file_path_name      文件路径文件名部分。
+ * @param content             博客正文（Markdown）。
+ * @param date                更新日期（YYYY-MM-DD 格式）。
  * @return 错误消息字符串（空表示成功）。
  */
 [[nodiscard]] auto save_blog(
@@ -117,10 +117,10 @@ struct BlogQuery
     std::string_view          description,
     std::string_view          category_name,
     const std::vector<std::string>& tag_names,
-    std::string_view          file_path,
+    std::string_view          file_path_category,
+    std::string_view          file_path_name,
     std::string_view          content,
-    std::string_view          date,
-    std::string_view          md_output_path)
+    std::string_view          date)
 -> std::string;
 
 } // namespace blog
