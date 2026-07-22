@@ -1,9 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
-const canCreate = computed(() => auth.permissions.includes('create'))
 
 const title = ref('')
 const description = ref('')
@@ -43,6 +42,11 @@ async function importFile() {
 }
 
 async function saveBlog() {
+  if (!auth.isLoggedIn) {
+    alert('请先登录')
+    return
+  }
+
   const tagList = tags.value.split(',').map(s => s.trim()).filter(Boolean)
   const content = editorRef.value?.innerText || ''
 
@@ -54,7 +58,10 @@ async function saveBlog() {
 
   const resp = await fetch('/api/blog/save', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${auth.token}`,
+    },
     body: JSON.stringify({
       title: title.value,
       description: description.value,
@@ -107,9 +114,7 @@ async function saveBlog() {
         </div>
         <div class="blog-edit__actions">
           <button class="blog-edit__btn blog-edit__btn--import" @click="importFile">导入文件</button>
-          <button class="blog-edit__btn blog-edit__btn--primary" :disabled="!canCreate" @click="saveBlog">
-            {{ canCreate ? '保存博客' : '无权限' }}
-          </button>
+          <button class="blog-edit__btn blog-edit__btn--primary" @click="saveBlog">保存博客</button>
         </div>
       </aside>
       <section class="blog-edit__main glass">
@@ -208,11 +213,7 @@ async function saveBlog() {
   background: var(--pink-soft);
   border: 1px solid var(--color-border);
 }
-.blog-edit__btn--primary:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.blog-edit__btn:hover:not(:disabled) {
+.blog-edit__btn:hover {
   opacity: 0.85;
 }
 
