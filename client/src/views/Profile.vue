@@ -1,9 +1,29 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const router = useRouter()
 const auth = useAuthStore()
+
+const permissions = ref<string[]>([])
+const loading = ref(false)
+
+onMounted(async () => {
+  if (!auth.id) return
+  loading.value = true
+  try {
+    const resp = await fetch(`/api/user/permissions?user_id=${auth.id}`)
+    if (resp.ok) {
+      const data = await resp.json()
+      permissions.value = data.permissions ?? []
+    }
+  } catch {
+    // 忽略
+  } finally {
+    loading.value = false
+  }
+})
 
 function handleLogout() {
   auth.logout()
@@ -24,9 +44,10 @@ function handleLogout() {
       </p>
 
       <!-- 权限列表 -->
-      <ul v-if="auth.permissions.length" class="profile-card__permissions">
+      <p v-if="loading" class="profile-card__no-perm">加载中...</p>
+      <ul v-else-if="permissions.length" class="profile-card__permissions">
         <li
-          v-for="perm in auth.permissions"
+          v-for="perm in permissions"
           :key="perm"
           class="profile-card__perm-item"
         >

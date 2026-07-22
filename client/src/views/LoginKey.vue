@@ -28,12 +28,12 @@ async function handleSubmit() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ key: trimmed }),
     })
-    const data: { error?: string; username?: string | null; permissions?: string[] } = await resp.json()
+    const data: { error?: string; id?: number; username?: string | null; token?: string } = await resp.json()
     if (!resp.ok) {
       error.value = data.error || '不存在或已失效的密钥'
       return
     }
-    auth.login(data.username, data.permissions)
+    auth.login(data.id!, data.username ?? null, data.token!)
     router.push('/')
   } catch {
     error.value = '网络错误，请稍后重试'
