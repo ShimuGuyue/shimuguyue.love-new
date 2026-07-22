@@ -117,4 +117,12 @@ auto login_by_password(
     return result;
 }
 
+auto get_permissions(pqxx::connection& conn, int user_id) -> std::vector<std::string>
+{
+    pqxx::work txn{ conn };
+    auto perms = fetch_permissions(txn, user_id);
+    txn.commit();
+    return perms;
+}
+
 } // namespace auth
