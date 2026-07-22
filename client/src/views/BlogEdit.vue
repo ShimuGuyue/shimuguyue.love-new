@@ -32,7 +32,9 @@ async function importFile() {
       pathCategory.value = data.file_path_category || ''
       pathName.value = data.file_path_name || ''
       if (editorRef.value) {
-        editorRef.value.innerText = data.content || ''
+        let content = data.content || ''
+        content = content.replace(/\t/g, '    ').replace(/[ \t]+$/gm, '')
+        editorRef.value.textContent = content
       }
     } catch (e) {
       // 后端不可用时本地解析
@@ -225,6 +227,8 @@ async function saveBlog() {
   background: transparent;
   border: none;
   outline: none;
+  white-space: pre-wrap;
+  tab-size: 4;
 }
 .blog-edit__content:empty::before {
   content: attr(placeholder);
