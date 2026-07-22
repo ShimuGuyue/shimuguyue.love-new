@@ -32,7 +32,9 @@ async function importFile() {
       pathCategory.value = data.file_path_category || ''
       pathName.value = data.file_path_name || ''
       if (editorRef.value) {
-        editorRef.value.innerText = data.content || ''
+        let content = data.content || ''
+        content = content.replace(/\t/g, '    ').replace(/[ \t]+$/gm, '')
+        editorRef.value.textContent = content
       }
     } catch (e) {
       // 后端不可用时本地解析
@@ -51,6 +53,38 @@ async function saveBlog() {
     alert('请填写所有字段后再保存')
     return
   }
+
+  // 元信息特殊字符校验
+  const META_RE = /[<>&"'\\|*?\/]/
+
+  if (META_RE.test(title.value)) {
+    alert('标题 含有特殊字符（< > & " \' \\ | * ? /）');
+    return;
+  }
+  if (META_RE.test(description.value)) {
+    alert('描述 含有特殊字符（< > & " \' \\ | * ? /）');
+    return;
+  }
+  if (META_RE.test(category.value)) {
+    alert('分类 含有特殊字符（< > & " \' \\ | * ? /）');
+    return;
+  }
+  if (META_RE.test(pathCategory.value) || META_RE.test(pathName.value)) {
+    alert('文件路径 含有特殊字符（< > & " \' \\ | * ? /）');
+    return;
+  }
+  if (pathCategory.value.includes('..') || pathName.value.includes('..')) {
+    alert('文件路径 含有非法路径 ".."');
+    return;
+  }
+  if (!tagList.every(tag => {
+    if (META_RE.test(tag)) {
+      alert(`标签 含有特殊字符`);
+      return false;
+    }
+    return true;
+  })) return;
+
 
   const resp = await fetch('/api/blog/save', {
     method: 'POST',
@@ -225,6 +259,8 @@ async function saveBlog() {
   background: transparent;
   border: none;
   outline: none;
+  white-space: pre-wrap;
+  tab-size: 4;
 }
 .blog-edit__content:empty::before {
   content: attr(placeholder);

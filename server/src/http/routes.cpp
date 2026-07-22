@@ -10,7 +10,6 @@
 
 #include <cstdlib>
 #include <ctime>
-#include <filesystem>
 #include <iostream>
 #include <mutex>
 #include <sstream>
@@ -330,18 +329,14 @@ static void handle_blog_save(
         for (const auto& t : tagsJson)
             if (t.is_string()) tagList.push_back(t.get<std::string>());
 
-    const std::string fp = std::string{pathCat} + "/" + std::string{pathName};
-
     std::time_t now = std::time(nullptr);
     char buf[16];
     std::strftime(buf, sizeof buf, "%Y-%m-%d", std::localtime(&now));
 
-    const std::filesystem::path outPath =
-        std::filesystem::path{ md::doc_path() } / "blogs" / (fp + ".md");
-
     const auto err = blog::save_blog(
-        conn, title, description, category, tagList, fp,
-        content, buf, outPath.string());
+        conn, title, description, category, tagList,
+        pathCat, pathName,
+        content, buf);
 
     if (!err.empty()) {
         res.status = 500;
