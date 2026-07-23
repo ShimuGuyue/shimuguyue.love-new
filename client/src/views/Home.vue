@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 
@@ -26,6 +26,30 @@ const previewImage = computed(() =>
     : null
 )
 
+const previewSrcRect = ref<DOMRect | null>(null)
+
+watch(previewImage, async (img) => {
+  if (!img || !previewSrcRect.value) return
+  await nextTick()
+  const el = document.querySelector('.home__preview-img') as HTMLElement | null
+  if (!el) return
+  const start = previewSrcRect.value
+  const end = el.getBoundingClientRect()
+  // 计算从墙上位置到屏幕中央的 delta（用 transform 偏移）
+  const dx = (start.left + start.width / 2) - (end.left + end.width / 2)
+  const dy = (start.top + start.height / 2) - (end.top + end.height / 2)
+  const sx = start.width / end.width
+  const sy = start.height / end.height
+  el.animate([
+    { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy}) rotate(${img.rotation}deg)`, opacity: 0 },
+    { transform: 'translate(0, 0) scale(1, 1) rotate(0deg)', opacity: 1 },
+  ], {
+    duration: 450,
+    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+    fill: 'backwards',
+  })
+})
+
 onMounted(async () => {
   await loadImages()
   if (auth.isLoggedIn && auth.id !== null) {
@@ -46,11 +70,11 @@ async function loadImages() {
   } catch { /* 静默 */ }
 }
 
-function openPreview(id: number) {
   previewId.value = id
 }
 function closePreview() {
   previewId.value = null
+  previewSrcRect.value = null
 }
 
 function imgStyle(img: ImageItem) {
@@ -76,24 +100,31 @@ function imgStyle(img: ImageItem) {
             :src="`/image/${img.path}`"
             :alt="img.description"
             draggable="false"
-            @click.stop="openPreview(img.id)"
+            @click.stop="openPreview(img.id, $event)"
           />
         </div>
       </div>
       <div class="home__info"></div>
     </div>
 
-    <div
-      v-if="previewImage"
-      class="home__preview"
-      :style="{ background: theme.isDark ? 'rgba(0,0,0,0.01)' : 'rgba(255,255,255,0.01)' }"
-      @click="closePreview"
-    >
-      <img :src="`/image/${previewImage.path}`" class="home__preview-img" />
-    </div>
-    <div v-if="previewImage" class="home__preview-desc glass">
-      {{ previewImage.description || '暂无简介' }}
-    </div>
+    <Transition name="preview">
+      <div
+        v-if="previewImage"
+        class="home__preview"
+        :style="{ background: theme.isDark ? 'rgba(0,0,0,0.01)' : 'rgba(255,255,255,0.01)' }"
+        @click="closePreview"
+      >
+        <img
+          :src="`/image/${previewImage.path}`"
+          class="home__preview-img"
+        />
+      </div>
+    </Transition>
+    <Transition name="preview">
+      <div v-if="previewImage" class="home__preview-desc glass">
+        {{ previewImage.description || '暂无简介' }}
+      </div>
+    </Transition>
   </main>
 </template>
 
@@ -151,6 +182,18 @@ function imgStyle(img: ImageItem) {
   max-width: 65vw;
   object-fit: contain;
   border-radius: 8px;
+}
+
+/* Vue Transition 类 */
+.preview-enter-active {
+  transition: opacity 1s ease;
+}
+.preview-leave-active {
+  transition: opacity 0.5s ease;
+}
+.preview-enter-from,
+.preview-leave-to {
+  opacity: 0;
 }
 
 .home__preview-desc {
