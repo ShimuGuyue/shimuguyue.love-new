@@ -390,7 +390,7 @@ function imgStyle(img: ImageItem) {
       <div
         v-if="previewImage"
         class="home__preview-desc"
-        :style="{ backgroundImage: 'url(/image/note-background.png)' }"
+        :style="{ backgroundImage: 'url(/assets/note-background.png)' }"
       >
         <textarea
           v-if="editMode && permissions.includes('edit')"
@@ -602,7 +602,7 @@ function imgStyle(img: ImageItem) {
   transform: translateY(20px);
   background: transparent;
   border: none;
-  color: var(--color-text);
+  color: #000000;
   font-size: 1rem;
   line-height: 1.8;
   padding: 8px;
@@ -622,7 +622,7 @@ function imgStyle(img: ImageItem) {
   font-weight: bold;
   font-size: 1rem;
   line-height: 1.8;
-  color: var(--color-text);
+  color: #000000;
   padding: 8px;
   box-sizing: border-box;
   word-break: break-word;
