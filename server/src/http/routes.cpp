@@ -561,6 +561,33 @@ void setup_routes(httplib::Server& svr, pqxx::connection& conn)
             res.set_content(R"({"ok":true})", "application/json");
         }
     );
+
+    // POST /api/image/upload — 上传图片文件（需要 edit 权限）
+    svr.Post("/api/image/upload",
+        [&conn, allowed](const auto& req, auto& res)
+        {
+            res.set_header("Access-Control-Allow-Origin", allowed);
+            res.set_header("Content-Type", "application/json");
+
+            if (!req.form.has_file("file")) {
+                res.status = 400;
+                res.set_content(R"({"error":"未选择文件"})", "application/json");
+                return;
+            }
+            const auto file = req.form.get_file("file");
+
+            std::lock_guard<std::mutex> lock{ g_db_mutex };
+            auto [err, result] = img::upload_image(conn, file.filename, file.content);
+            if (!err.empty()) {
+                res.status = 500;
+                nlohmann::json j;
+                j["error"] = err;
+                res.set_content(j.dump(), "application/json");
+                return;
+            }
+            res.set_content(result.dump(), "application/json");
+        }
+    );
     // POST /api/blog/save — 保存博客
     svr.Post("/api/blog/save",
         [&conn, allowed](const auto& req, auto& res)

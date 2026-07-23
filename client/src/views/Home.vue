@@ -185,6 +185,30 @@ function onWallWheel(e: WheelEvent) {
   if (e.ctrlKey) e.preventDefault()
 }
 
+async function uploadImage() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.onchange = async () => {
+    const file = input.files?.[0]
+    if (!file) return
+    const form = new FormData()
+    form.append('file', file)
+    const resp = await fetch('/api/image/upload', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${auth.token}` },
+      body: form,
+    })
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: '上传失败' }))
+      alert(err.error || '上传失败')
+      return
+    }
+    await loadImages()
+  }
+  input.click()
+}
+
 // ── 滚轮缩放/旋转 ──
 function onImgWheel(e: WheelEvent, imgId: number) {
   if (!editMode.value) return

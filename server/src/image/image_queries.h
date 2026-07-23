@@ -51,4 +51,18 @@ void init();
     double             pos_y)
 -> std::string;
 
+
+/**
+ * @brief 上传图片：校验格式、插入数据库获取 id、以 id 命名写文件。
+ * @param conn     数据库连接。
+ * @param filename 原始文件名（用于提取扩展名）。
+ * @param data     文件二进制内容。
+ * @return 第一个元素为错误消息（空表示成功），第二个为结果 JSON（含 id, path）。
+ */
+[[nodiscard]] auto upload_image(
+    pqxx::connection& conn,
+    std::string_view  filename,
+    std::string_view  data)
+-> std::pair<std::string, nlohmann::json>;
+
 } // namespace img
