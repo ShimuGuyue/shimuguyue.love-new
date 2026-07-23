@@ -70,6 +70,24 @@ async function loadImages() {
   } catch { /* 静默 */ }
 }
 
+const editMode = ref(false)
+
+/// 点击空白处进入编辑模式
+function onWallClick(e: MouseEvent) {
+  if (editMode.value) return  // 已在编辑模式不再响应
+  if ((e.target as HTMLElement).closest('.home__img')) return
+  if (!auth.isLoggedIn) { alert('请先登录'); return }
+  if (!permissions.value.includes('edit')) { alert('当前用户无 edit 权限'); return }
+  editMode.value = true
+}
+
+function exitEdit() {
+  editMode.value = false
+}
+
+function openPreview(id: number, event: MouseEvent) {
+  const el = event.currentTarget as HTMLElement
+  previewSrcRect.value = el.getBoundingClientRect()
   previewId.value = id
 }
 function closePreview() {
@@ -89,11 +107,13 @@ function imgStyle(img: ImageItem) {
 <template>
   <main class="home">
     <div class="home__layout">
-      <div class="home__photo glass">
+      <div class="home__photo glass" @click="onWallClick">
+        <button v-if="editMode" class="home__edit-done" @click.stop="exitEdit">完成编辑</button>
         <div
           v-for="img in images"
           :key="img.id"
           class="home__img"
+          :class="{ 'home__img--edit': editMode }"
           :style="imgStyle(img)"
         >
           <img
@@ -164,6 +184,27 @@ function imgStyle(img: ImageItem) {
   object-fit: contain;
   cursor: pointer;
   user-select: none;
+}
+
+.home__img--edit {
+  cursor: grab;
+  outline: 2px dashed var(--pink-soft);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.home__edit-done {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 100;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--color-text);
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
 .home__preview {
