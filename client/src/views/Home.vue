@@ -40,8 +40,12 @@ watch(previewImage, async (img) => {
   const dy = (start.top + start.height / 2) - (end.top + end.height / 2)
   const sx = start.width / end.width
   const sy = start.height / end.height
+  // 旋转取最短路径（-180° ~ 180°）
+  let sr = img.rotation % 360
+  if (sr > 180) sr -= 360
+  if (sr < -180) sr += 360
   el.animate([
-    { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy}) rotate(${img.rotation}deg)`, opacity: 0 },
+    { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy}) rotate(${sr}deg)`, opacity: 0 },
     { transform: 'translate(0, 0) scale(1, 1) rotate(0deg)', opacity: 1 },
   ], {
     duration: 450,
