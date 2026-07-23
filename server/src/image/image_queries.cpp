@@ -65,4 +65,39 @@ auto get_all_images(pqxx::connection& conn) -> nlohmann::json
     return arr;
 }
 
+auto save_image(
+    pqxx::connection&  conn,
+    std::string_view   path,
+    std::string_view   description,
+    double             scale,
+    double             rotation,
+    double             pos_x,
+    double             pos_y)
+-> std::string
+{
+    pqxx::work txn{ conn };
+
+    // UPSERT: 存在则更新元数据，不存在则插入
+    txn.exec(
+        "INSERT INTO images (path, description, scale, rotation, pos_x, pos_y) "
+        "VALUES ($1, $2, $3, $4, $5, $6) "
+        "ON CONFLICT (path) DO UPDATE SET "
+        "description = EXCLUDED.description, "
+        "scale       = EXCLUDED.scale, "
+        "rotation    = EXCLUDED.rotation, "
+        "pos_x       = EXCLUDED.pos_x, "
+        "pos_y       = EXCLUDED.pos_y",
+        pqxx::params{
+            std::string{path},
+            std::string{description},
+            scale,
+            rotation,
+            pos_x,
+            pos_y
+        }
+    );
+
+    txn.commit();
+    return {};
+}
 } // namespace img

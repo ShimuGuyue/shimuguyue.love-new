@@ -71,18 +71,121 @@ async function loadImages() {
 }
 
 const editMode = ref(false)
+const draggingId = ref<number | null>(null)
+const dragStart = ref({ x: 0, y: 0 })
+/// 进入编辑模式时保存的快照
+const editSnapshot = ref<string>('')
 
 /// 点击空白处进入编辑模式
 function onWallClick(e: MouseEvent) {
-  if (editMode.value) return  // 已在编辑模式不再响应
+  if (editMode.value) return
   if ((e.target as HTMLElement).closest('.home__img')) return
-  if (!auth.isLoggedIn) { alert('请先登录'); return }
-  if (!permissions.value.includes('edit')) { alert('当前用户无 edit 权限'); return }
   editMode.value = true
+  // 保存快照
+  editSnapshot.value = JSON.stringify(images.value.map(i => ({
+    id: i.id, pos_x: i.pos_x, pos_y: i.pos_y, scale: i.scale, rotation: i.rotation,
+  })))
 }
 
-function exitEdit() {
+async function exitEdit() {
+  const changed = hasChanges()
+  if (changed) {
+    if (!permissions.value.includes('edit')) {
+      alert('当前用户无 edit 权限，修改无法生效')
+      revertChanges()
+      editMode.value = false
+      return
+    }
+    // 保存所有变更
+    for (const img of images.value) {
+      await saveMeta(img)
+    }
+  }
   editMode.value = false
+}
+
+function hasChanges(): boolean {
+  try {
+    const snap = JSON.parse(editSnapshot.value) as Pick<ImageItem, 'id' | 'pos_x' | 'pos_y' | 'scale' | 'rotation'>[]
+    for (const img of images.value) {
+      const s = snap.find(s => s.id === img.id)
+      if (!s) return true
+      if (s.pos_x !== img.pos_x || s.pos_y !== img.pos_y || s.scale !== img.scale || s.rotation !== img.rotation) return true
+    }
+    return false
+  } catch { return false }
+}
+
+function revertChanges() {
+  try {
+    const snap = JSON.parse(editSnapshot.value) as Pick<ImageItem, 'id' | 'pos_x' | 'pos_y' | 'scale' | 'rotation'>[]
+    for (const s of snap) {
+      const img = images.value.find(i => i.id === s.id)
+      if (img) {
+        img.pos_x = s.pos_x
+        img.pos_y = s.pos_y
+        img.scale = s.scale
+        img.rotation = s.rotation
+      }
+    }
+  } catch { /* 静默 */ }
+}
+
+async function saveMeta(img: ImageItem) {
+  await fetch('/api/image/save', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${auth.token}`,
+    },
+    body: JSON.stringify({
+      path: img.path,
+      description: img.description,
+      scale: img.scale,
+      rotation: img.rotation,
+      pos_x: img.pos_x,
+      pos_y: img.pos_y,
+    }),
+  })
+}
+
+// ── 拖拽 ──
+function onImgMouseDown(e: MouseEvent, imgId: number) {
+  if (!editMode.value) return
+  draggingId.value = imgId
+  dragStart.value = { x: e.clientX, y: e.clientY }
+  e.preventDefault()
+  e.stopPropagation()
+}
+
+function onWallMouseMove(e: MouseEvent) {
+  if (draggingId.value === null) return
+  const wall = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  const img = images.value.find(i => i.id === draggingId.value)
+  if (!img) return
+  const dx = ((e.clientX - dragStart.value.x) / wall.width) * 100
+  const dy = ((e.clientY - dragStart.value.y) / wall.height) * 100
+  img.pos_x = Math.max(0, Math.min(100, img.pos_x + dx))
+  img.pos_y = Math.max(0, Math.min(100, img.pos_y + dy))
+  dragStart.value = { x: e.clientX, y: e.clientY }
+}
+
+function onWallMouseUp() {
+  draggingId.value = null
+}
+
+// ── 滚轮缩放/旋转 ──
+function onImgWheel(e: WheelEvent, imgId: number) {
+  if (!editMode.value) return
+  e.preventDefault()
+  e.stopPropagation()
+  const img = images.value.find(i => i.id === imgId)
+  if (!img) return
+  if (e.shiftKey) {
+    img.rotation = (img.rotation + e.deltaY * 0.5 + 360) % 360
+  } else {
+    img.scale = Math.max(0.1, Math.min(5, img.scale - e.deltaY * 0.005))
+  }
 }
 
 function openPreview(id: number, event: MouseEvent) {
@@ -107,7 +210,13 @@ function imgStyle(img: ImageItem) {
 <template>
   <main class="home">
     <div class="home__layout">
-      <div class="home__photo glass" @click="onWallClick">
+      <div
+        class="home__photo glass"
+        @click="onWallClick"
+        @mousemove="onWallMouseMove"
+        @mouseup="onWallMouseUp"
+        @mouseleave="onWallMouseUp"
+      >
         <button v-if="editMode" class="home__edit-done" @click.stop="exitEdit">完成编辑</button>
         <div
           v-for="img in images"
@@ -115,12 +224,14 @@ function imgStyle(img: ImageItem) {
           class="home__img"
           :class="{ 'home__img--edit': editMode }"
           :style="imgStyle(img)"
+          @mousedown="e => onImgMouseDown(e, img.id)"
         >
           <img
             :src="`/image/${img.path}`"
             :alt="img.description"
             draggable="false"
-            @click.stop="openPreview(img.id, $event)"
+            @click.stop="!editMode && openPreview(img.id, $event)"
+            @wheel.prevent="e => onImgWheel(e, img.id)"
           />
         </div>
       </div>

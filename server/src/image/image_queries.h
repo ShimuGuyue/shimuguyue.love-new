@@ -29,3 +29,26 @@ void init();
  * @return JSON 数组。
  */
 [[nodiscard]] auto get_all_images(pqxx::connection& conn) -> nlohmann::json;
+
+/**
+ * @brief 保存图片记录（不存在则插入，存在则更新位置/缩放/旋转/简介）。
+ * @param conn        数据库连接。
+ * @param path        图片相对路径。
+ * @param description 简介。
+ * @param scale       缩放比例。
+ * @param rotation    旋转角度。
+ * @param pos_x       水平坐标（百分比）。
+ * @param pos_y       垂直坐标（百分比）。
+ * @return 错误消息（空表示成功）。
+ */
+[[nodiscard]] auto save_image(
+    pqxx::connection&  conn,
+    std::string_view   path,
+    std::string_view   description,
+    double             scale,
+    double             rotation,
+    double             pos_x,
+    double             pos_y)
+-> std::string;
+
+} // namespace img
