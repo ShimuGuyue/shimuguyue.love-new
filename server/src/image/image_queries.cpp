@@ -8,6 +8,7 @@
 #include <cstdlib>
 #include <filesystem>
 #include <format>
+#include <fstream>
 #include <iostream>
 #include <nlohmann/json.hpp>
 
@@ -98,6 +99,30 @@ auto save_image(
     );
 
     txn.commit();
+    return {};
+}
+
+auto delete_image(
+    pqxx::connection& conn,
+    std::string_view  path)
+-> std::string
+{
+    pqxx::work txn{ conn };
+
+    const auto r = txn.exec(
+        "DELETE FROM images WHERE path = $1", pqxx::params{ std::string{path} }
+    );
+    txn.commit();
+
+    if (r.affected_rows() == 0)
+        return "图片记录不存在";
+
+    std::error_code ec;
+    std::filesystem::path file_path{
+        std::format("{}/{}", IMAGE_PATH, path)
+    };
+    std::filesystem::remove(file_path, ec);
+
     return {};
 }
 

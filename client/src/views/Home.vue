@@ -79,6 +79,8 @@ const draggingId = ref<number | null>(null)
 const dragStart = ref({ x: 0, y: 0 })
 /// 进入编辑模式时保存的快照
 const editSnapshot = ref<string>('')
+/// 待删除的图片 id 集合（完成编辑时统一删除）
+const pendingDeletes = ref<Set<number>>(new Set())
 
 /// 点击空白处进入编辑模式
 function onWallClick(e: MouseEvent) {
@@ -92,21 +94,41 @@ function onWallClick(e: MouseEvent) {
 }
 
 async function exitEdit() {
-  const changed = hasChanges()
+  const changed = hasChanges() || pendingDeletes.value.size > 0
+  if (changed && !permissions.value.includes('edit')) {
+    alert('当前用户无 edit 权限，修改无法生效')
+    pendingDeletes.value = new Set()
+    revertChanges()
+    editMode.value = false
+    return
+  }
+
+  for (const id of pendingDeletes.value) {
+    const img = images.value.find(i => i.id === id)
+    if (img) {
+      await fetch('/api/image/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`,
+        },
+        body: JSON.stringify({ path: img.path }),
+      })
+    }
+  }
+  images.value = images.value.filter(i => !pendingDeletes.value.has(i.id))
+  pendingDeletes.value = new Set()
+
   if (changed) {
-    if (!permissions.value.includes('edit')) {
-      alert('当前用户无 edit 权限，修改无法生效')
-      revertChanges()
-    } else {
-      for (const img of images.value) {
-        await saveMeta(img)
-      }
+    for (const img of images.value) {
+      await saveMeta(img)
     }
   }
   editMode.value = false
 }
 
 function cancelEdit() {
+  pendingDeletes.value = new Set()
   revertChanges()
   editMode.value = false
 }
@@ -183,6 +205,15 @@ function onWallMouseUp() {
 
 function onWallWheel(e: WheelEvent) {
   if (e.ctrlKey) e.preventDefault()
+}
+
+function markDelete(img: ImageItem) {
+  if (pendingDeletes.value.has(img.id)) {
+    pendingDeletes.value.delete(img.id)
+  } else {
+    pendingDeletes.value.add(img.id)
+  }
+  pendingDeletes.value = new Set(pendingDeletes.value)
 }
 
 async function uploadImage() {
@@ -282,17 +313,27 @@ function imgStyle(img: ImageItem) {
           v-for="img in images"
           :key="img.id"
           class="home__img"
-          :class="{ 'home__img--edit': editMode }"
           :style="imgStyle(img)"
-          @mousedown="e => onImgMouseDown(e, img.id)"
         >
-          <img
-            :src="`/image/${img.path}`"
-            :alt="img.description"
-            draggable="false"
+          <div
+            class="home__img-wrap"
+            :class="{ 'home__img--edit': editMode, 'home__img-wrap--pending': editMode && pendingDeletes.has(img.id) }"
+            :style="{ transform: `translate(-50%, -50%) scale(${img.scale}) rotate(${img.rotation}deg)` }"
+            @mousedown="e => onImgMouseDown(e, img.id)"
             @click.stop="!editMode && openPreview(img.id, $event)"
             @wheel.prevent="e => onImgWheel(e, img.id)"
-          />
+          >
+            <img
+              :src="`/image/${img.path}`"
+              :alt="img.description"
+              draggable="false"
+            />
+            <button
+              v-if="editMode"
+              class="home__img-del"
+              @click.stop="markDelete(img)"
+            >✕</button>
+          </div>
         </div>
       </div>
       <div class="home__info"></div>
@@ -353,8 +394,13 @@ function imgStyle(img: ImageItem) {
   max-height: 300px;
   border-radius: 4px;
   object-fit: contain;
-  cursor: pointer;
+  pointer-events: none;
   user-select: none;
+}
+
+.home__img-wrap {
+  position: relative;
+  cursor: pointer;
 }
 
 .home__img--edit {
@@ -362,6 +408,31 @@ function imgStyle(img: ImageItem) {
   outline: 2px dashed var(--pink-soft);
   outline-offset: 4px;
   border-radius: 4px;
+}
+
+.home__img-del {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  z-index: 10;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: #d44;
+  color: #fff;
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home__img-wrap--pending {
+  opacity: 0;
+}
+.home__img-wrap--pending .home__img-del {
+  background: #666;
 }
 
 .home__edit-done {

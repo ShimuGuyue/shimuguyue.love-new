@@ -53,6 +53,17 @@ void init();
 
 
 /**
+ * @brief 删除图片记录及文件。
+ * @param conn 数据库连接。
+ * @param path 图片相对路径。
+ * @return 错误消息（空表示成功）。
+ */
+[[nodiscard]] auto delete_image(
+    pqxx::connection& conn,
+    std::string_view  path)
+-> std::string;
+
+/**
  * @brief 上传图片：校验格式、插入数据库获取 id、以 id 命名写文件。
  * @param conn     数据库连接。
  * @param filename 原始文件名（用于提取扩展名）。
