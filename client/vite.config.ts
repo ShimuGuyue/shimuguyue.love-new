@@ -17,6 +17,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': 'http://localhost:8080',
+      '/image/home': 'http://localhost:8080',
     },
   },
   build: {

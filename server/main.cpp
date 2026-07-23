@@ -6,6 +6,7 @@
 
 #include "db/connection.h"
 #include "http/routes.h"
+#include "image/image_queries.h"
 #include "md/markdown_parser.h"
 
 int main(int argc, char* argv[])
@@ -18,6 +19,7 @@ int main(int argc, char* argv[])
     pqxx::connection conn = db::connect();
 
     md::init();
+    img::init();
 
     httplib::Server svr;
     http::setup_routes(svr, conn);

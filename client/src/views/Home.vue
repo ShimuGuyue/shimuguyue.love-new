@@ -1,9 +1,620 @@
 <script setup lang="ts">
+import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useThemeStore } from '@/stores/theme'
+
+const auth = useAuthStore()
+const theme = useThemeStore()
+
+interface ImageItem {
+  id: number
+  path: string
+  description: string
+  scale: number
+  rotation: number
+  pos_x: number
+  pos_y: number
+  z: number
+}
+
+const images = ref<ImageItem[]>([])
+const permissions = ref<string[]>([])
+
+const previewId = ref<number | null>(null)
+const previewImage = computed(() =>
+  previewId.value !== null
+    ? images.value.find(i => i.id === previewId.value) ?? null
+    : null
+)
+
+const previewSrcRect = ref<DOMRect | null>(null)
+
+watch(previewImage, async (img) => {
+  if (!img || !previewSrcRect.value) return
+  await nextTick()
+  await new Promise(r => requestAnimationFrame(r))
+  const el = document.querySelector('.home__preview-img') as HTMLElement | null
+  if (!el) return
+  const start = previewSrcRect.value
+  const end = el.getBoundingClientRect()
+  // 计算从墙上位置到屏幕中央的 delta（用 transform 偏移）
+  const dx = (start.left + start.width / 2) - (end.left + end.width / 2)
+  const dy = (start.top + start.height / 2) - (end.top + end.height / 2)
+  const sx = start.width / end.width
+  const sy = start.height / end.height
+  // 旋转取最短路径（-180° ~ 180°）
+  let sr = img.rotation % 360
+  if (sr > 180) sr -= 360
+  if (sr < -180) sr += 360
+  el.animate([
+    { transform: `translate(${dx}px, ${dy}px) scale(${sx}, ${sy}) rotate(${sr}deg)`, opacity: 0 },
+    { transform: 'translate(0, 0) scale(1, 1) rotate(0deg)', opacity: 1 },
+  ], {
+    duration: 450,
+    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+    fill: 'backwards',
+  })
+})
+
+onMounted(async () => {
+  await loadImages()
+  if (auth.isLoggedIn && auth.id !== null) {
+    try {
+      const resp = await fetch(`/api/user/permissions?user_id=${auth.id}`)
+      if (resp.ok) {
+        const data = await resp.json()
+        permissions.value = data.permissions || []
+      }
+    } catch { /* 静默 */ }
+  }
+})
+
+async function loadImages() {
+  try {
+    const resp = await fetch('/api/images')
+    if (resp.ok) images.value = await resp.json()
+  } catch { /* 静默 */ }
+}
+
+const editMode = ref(false)
+const draggingId = ref<number | null>(null)
+const dragStart = ref({ x: 0, y: 0 })
+/// 进入编辑模式时保存的快照
+const editSnapshot = ref<string>('')
+/// 待删除的图片 id 集合（完成编辑时统一删除）
+const pendingDeletes = ref<Set<number>>(new Set())
+/// z-index 计数器，每次交互递增
+let zCounter = 1
+
+function bringToFront(imgId: number) {
+  const img = images.value.find(i => i.id === imgId)
+  if (img) img.z = ++zCounter
+}
+
+/// 点击空白处进入编辑模式
+function onWallClick(e: MouseEvent) {
+  if (editMode.value) return
+  if ((e.target as HTMLElement).closest('.home__img')) return
+  editMode.value = true
+  // 保存快照
+  editSnapshot.value = JSON.stringify(images.value.map(i => ({
+    id: i.id, pos_x: i.pos_x, pos_y: i.pos_y, scale: i.scale, rotation: i.rotation, description: i.description,
+  })))
+}
+
+async function exitEdit() {
+  const changed = hasChanges() || pendingDeletes.value.size > 0
+  if (changed && !permissions.value.includes('edit')) {
+    alert('当前用户无 edit 权限，修改无法生效')
+    pendingDeletes.value = new Set()
+    revertChanges()
+    editMode.value = false
+    return
+  }
+
+  for (const id of pendingDeletes.value) {
+    const img = images.value.find(i => i.id === id)
+    if (img) {
+      await fetch('/api/image/delete', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${auth.token}`,
+        },
+        body: JSON.stringify({ path: img.path }),
+      })
+    }
+  }
+  images.value = images.value.filter(i => !pendingDeletes.value.has(i.id))
+  pendingDeletes.value = new Set()
+
+  if (changed) {
+    for (const img of images.value) {
+      await saveMeta(img)
+    }
+  }
+  editMode.value = false
+}
+
+function cancelEdit() {
+  pendingDeletes.value = new Set()
+  revertChanges()
+  editMode.value = false
+}
+
+function hasChanges(): boolean {
+  try {
+    const snap = JSON.parse(editSnapshot.value) as Pick<ImageItem, 'id' | 'pos_x' | 'pos_y' | 'scale' | 'rotation' | 'description'>[]
+    for (const img of images.value) {
+      const s = snap.find(s => s.id === img.id)
+      if (!s) return true
+      if (s.pos_x !== img.pos_x || s.pos_y !== img.pos_y || s.scale !== img.scale || s.rotation !== img.rotation || s.description !== img.description) return true
+    }
+    return false
+  } catch { return false }
+}
+
+function revertChanges() {
+  try {
+    const snap = JSON.parse(editSnapshot.value) as Pick<ImageItem, 'id' | 'pos_x' | 'pos_y' | 'scale' | 'rotation' | 'description'>[]
+    for (const s of snap) {
+      const img = images.value.find(i => i.id === s.id)
+      if (img) {
+        img.pos_x = s.pos_x
+        img.pos_y = s.pos_y
+        img.scale = s.scale
+        img.rotation = s.rotation
+        img.description = s.description ?? ''
+      }
+    }
+  } catch { /* 静默 */ }
+}
+
+async function saveMeta(img: ImageItem) {
+  await fetch('/api/image/save', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${auth.token}`,
+    },
+    body: JSON.stringify({
+      path: img.path,
+      description: img.description,
+      scale: img.scale,
+      rotation: img.rotation,
+      pos_x: img.pos_x,
+      pos_y: img.pos_y,
+      z: img.z,
+    }),
+  })
+}
+
+// ── 拖拽 ──
+function onImgMouseDown(e: MouseEvent, imgId: number) {
+  if (!editMode.value) return
+  bringToFront(imgId)
+  draggingId.value = imgId
+  dragStart.value = { x: e.clientX, y: e.clientY }
+  e.preventDefault()
+  e.stopPropagation()
+}
+
+let wasDragged = false
+
+function onWallMouseMove(e: MouseEvent) {
+  if (draggingId.value === null) return
+  wasDragged = true
+  const wall = (e.currentTarget as HTMLElement).getBoundingClientRect()
+  const img = images.value.find(i => i.id === draggingId.value)
+  if (!img) return
+  const dx = ((e.clientX - dragStart.value.x) / wall.width) * 100
+  const dy = ((e.clientY - dragStart.value.y) / wall.height) * 100
+  img.pos_x = Math.max(0, Math.min(100, img.pos_x + dx))
+  img.pos_y = Math.max(0, Math.min(100, img.pos_y + dy))
+  dragStart.value = { x: e.clientX, y: e.clientY }
+}
+
+function onWallMouseUp() {
+  draggingId.value = null
+}
+
+function onWallWheel(e: WheelEvent) {
+  if (e.ctrlKey) e.preventDefault()
+}
+
+function markDelete(img: ImageItem) {
+  if (pendingDeletes.value.has(img.id)) {
+    pendingDeletes.value.delete(img.id)
+  } else {
+    pendingDeletes.value.add(img.id)
+  }
+  pendingDeletes.value = new Set(pendingDeletes.value)
+}
+
+async function uploadImage() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.onchange = async () => {
+    const file = input.files?.[0]
+    if (!file) return
+    const form = new FormData()
+    form.append('file', file)
+    const resp = await fetch('/api/image/upload', {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${auth.token}` },
+      body: form,
+    })
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({ error: '上传失败' }))
+      alert(err.error || '上传失败')
+      return
+    }
+    await loadImages()
+  }
+  input.click()
+}
+
+// ── 滚轮缩放/旋转 ──
+function onImgWheel(e: WheelEvent, imgId: number) {
+  if (!editMode.value) return
+  bringToFront(imgId)
+  e.preventDefault()
+  e.stopPropagation()
+  const img = images.value.find(i => i.id === imgId)
+  if (!img) return
+  const speed = e.ctrlKey ? 10 : 1
+  if (e.shiftKey) {
+    img.rotation = (img.rotation + e.deltaY * 0.01 * speed + 360) % 360
+  } else {
+    img.scale = Math.max(0.1, Math.min(5, img.scale - e.deltaY * 0.0001 * speed))
+  }
+}
+
+function handleImgClick(imgId: number, event: MouseEvent) {
+  if (wasDragged) { wasDragged = false; return }
+  openPreview(imgId, event)
+}
+
+function openPreview(id: number, event: MouseEvent) {
+  const el = event.currentTarget as HTMLElement
+  previewSrcRect.value = el.getBoundingClientRect()
+  previewId.value = id
+  if (editMode.value) {
+    const img = images.value.find(i => i.id === id)
+    if (img) editDesc.value = img.description
+  }
+}
+
+/// 编辑中的描述文本
+const editDesc = ref('')
+function closePreview() {
+  if (editMode.value && previewId.value !== null) {
+    const img = images.value.find(i => i.id === previewId.value)
+    if (img) img.description = editDesc.value
+  }
+  previewId.value = null
+  previewSrcRect.value = null
+}
+
+function imgStyle(img: ImageItem) {
+  return {
+    left: `${img.pos_x}%`,
+    top: `${img.pos_y}%`,
+    transform: `translate(-50%, -50%) scale(${img.scale}) rotate(${img.rotation}deg)`,
+  }
+}
 </script>
 
 <template>
-  <div class="home">
-    <h1>首页</h1>
-  </div>
+  <main class="home">
+    <div class="home__layout">
+      <div
+        class="home__photo glass"
+        @click="onWallClick"
+        @mousemove="onWallMouseMove"
+        @mouseup="onWallMouseUp"
+        @mouseleave="onWallMouseUp"
+        @wheel="onWallWheel"
+      >
+        <button
+          v-if="editMode" class="home__edit-done"
+          :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }"
+          @click.stop="exitEdit"
+        >完成编辑</button>
+        <button
+          v-if="editMode" class="home__edit-upload"
+          :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }"
+          @click.stop="uploadImage"
+        >上传图片</button>
+        <button
+          v-if="editMode" class="home__edit-cancel"
+          :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }"
+          @click.stop="cancelEdit"
+        >取消编辑</button>
+        <div
+          v-if="editMode" class="home__hint"
+          :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }"
+        >
+          <p>拖拽：按住图片拖动</p>
+          <p>缩放：滚轮</p>
+          <p>旋转：Shift + 滚轮</p>
+          <p>加速：按住 Ctrl 使缩放和旋转速度加快</p>
+        </div>
+        <div
+          v-for="img in images"
+          :key="img.id"
+          class="home__img"
+          :style="{ left: img.pos_x + '%', top: img.pos_y + '%', transform: 'translate(-50%, -50%)', zIndex: img.z || 0 }"
+        >
+          <div
+            class="home__img-wrap"
+            :class="{ 'home__img--edit': editMode, 'home__img-wrap--pending': editMode && pendingDeletes.has(img.id) }"
+            :style="{ transform: `scale(${img.scale}) rotate(${img.rotation}deg)` }"
+            @mousedown="e => onImgMouseDown(e, img.id)"
+            @click.stop="handleImgClick(img.id, $event)"
+            @wheel.prevent="e => onImgWheel(e, img.id)"
+          >
+            <img
+              :src="`/image/${img.path}`"
+              :alt="img.description"
+              draggable="false"
+            />
+            <button
+              v-if="editMode"
+              class="home__img-del"
+              @click.stop="markDelete(img)"
+            >✕</button>
+          </div>
+        </div>
+      </div>
+      <div class="home__info"></div>
+    </div>
+
+    <Transition name="preview">
+      <div
+        v-if="previewImage"
+        class="home__preview"
+        :style="{ background: theme.isDark ? 'rgba(0,0,0,0.01)' : 'rgba(255,255,255,0.01)' }"
+        @click="closePreview"
+      >
+        <img
+          :src="`/image/${previewImage.path}`"
+          class="home__preview-img"
+        />
+      </div>
+    </Transition>
+    <Transition name="preview">
+      <div
+        v-if="previewImage"
+        class="home__preview-desc"
+        :style="{ backgroundImage: 'url(/image/note-background.png)' }"
+      >
+        <textarea
+          v-if="editMode && permissions.includes('edit')"
+          v-model="editDesc"
+          class="home__preview-textarea"
+          @click.stop
+        />
+        <span v-else>{{ previewImage.description }}</span>
+      </div>
+    </Transition>
+  </main>
 </template>
 
+<style scoped>
+.home {
+  padding: 24px;
+  height: calc(100vh - 80px);
+  overflow: hidden;
+}
+
+.home__layout {
+  height: 100%;
+  display: grid;
+  grid-template-columns: 3fr 2fr;
+  gap: 24px;
+}
+
+.home__photo {
+  position: relative;
+  overflow: hidden;
+  min-height: 100%;
+  user-select: none;
+}
+
+/* .home__info {
+  右侧信息栏
+} */
+
+.home__img {
+  position: absolute;
+  cursor: pointer;
+}
+.home__img img {
+  display: block;
+  max-width: 300px;
+  max-height: 300px;
+  border-radius: 4px;
+  object-fit: contain;
+  pointer-events: none;
+  user-select: none;
+}
+
+.home__img-wrap {
+  position: relative;
+  cursor: pointer;
+}
+
+.home__img--edit {
+  cursor: grab;
+  outline: 2px dashed var(--pink-soft);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
+.home__img-del {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  z-index: 10;
+  width: 22px;
+  height: 22px;
+  border: none;
+  border-radius: 50%;
+  background: #d44;
+  color: #fff;
+  font-size: 0.7rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.home__img-wrap--pending {
+  opacity: 0;
+}
+.home__img-wrap--pending .home__img-del {
+  background: #666;
+}
+
+.home__edit-done {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 100;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.home__edit-upload {
+  position: absolute;
+  top: 12px;
+  right: 200px;
+  z-index: 100;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--pink-soft);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.home__edit-cancel {
+  position: absolute;
+  top: 12px;
+  right: 100px;
+  z-index: 100;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.home__hint {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 100;
+  padding: 8px 14px;
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+.home__hint p {
+  margin: 0;
+}
+
+.home__preview {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  backdrop-filter: blur(5px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.home__preview-img {
+  max-height: 90vh;
+  max-width: 65vw;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+/* Vue Transition 类 */
+.preview-enter-active {
+  transition: opacity 1s ease;
+}
+.preview-leave-active {
+  transition: opacity 0.5s ease;
+}
+.preview-enter-from,
+.preview-leave-to {
+  opacity: 0;
+}
+
+.home__preview-desc {
+  position: fixed;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2001;
+  padding: 24px;
+  width: 256px;
+  height: 256px;
+  font-size: 1rem;
+  color: var(--color-text);
+  line-height: 1.8;
+  background-size: contain;
+  background-position: center;
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center;     /* 垂直居中 */
+}
+
+.home__preview-textarea {
+  width: 80%;
+  height: 80%;
+  transform: translateY(20px);
+  background: transparent;
+  border: none;
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1.8;
+  padding: 8px;
+  resize: none;
+  outline: none;
+  font-family: "仿宋", FangSong, serif;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.home__preview-desc span {
+  display: block;
+  width: 80%;
+  height: 80%;
+  transform: translateY(20px);
+  font-family: "仿宋", FangSong, serif;
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--color-text);
+  padding: 8px;
+  box-sizing: border-box;
+  word-break: break-word;
+}
+</style>
+
+<style>
+@import "@/assets/glass.css";
+@import "@/assets/pink-theme.css";
+</style>

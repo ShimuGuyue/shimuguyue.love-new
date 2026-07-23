@@ -22,6 +22,7 @@ add_executable(${PROJECT_NAME}
     src/auth/login.cpp
     src/auth/session.cpp
     src/blog/blog_queries.cpp
+    src/image/image_queries.cpp
     src/http/routes.cpp
     src/md/markdown_parser.cpp
 )
