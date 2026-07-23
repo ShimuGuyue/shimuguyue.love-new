@@ -325,12 +325,12 @@ function imgStyle(img: ImageItem) {
           v-for="img in images"
           :key="img.id"
           class="home__img"
-          :style="{ left: img.pos_x + '%', top: img.pos_y + '%', zIndex: img.z || 0 }"
+          :style="{ left: img.pos_x + '%', top: img.pos_y + '%', transform: 'translate(-50%, -50%)', zIndex: img.z || 0 }"
         >
           <div
             class="home__img-wrap"
             :class="{ 'home__img--edit': editMode, 'home__img-wrap--pending': editMode && pendingDeletes.has(img.id) }"
-            :style="{ transform: `translate(-50%, -50%) scale(${img.scale}) rotate(${img.rotation}deg)` }"
+            :style="{ transform: `scale(${img.scale}) rotate(${img.rotation}deg)` }"
             @mousedown="e => onImgMouseDown(e, img.id)"
             @click.stop="!editMode && openPreview(img.id, $event)"
             @wheel.prevent="e => onImgWheel(e, img.id)"
