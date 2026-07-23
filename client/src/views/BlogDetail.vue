@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, nextTick, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import MarkdownIt from 'markdown-it'
 import taskLists from 'markdown-it-task-lists'
 import markdownItGitHubAlerts from 'markdown-it-github-alerts'
@@ -10,6 +11,11 @@ import katex from 'katex'
 import 'katex/dist/katex.min.css'
 
 const route = useRoute()
+const router = useRouter()
+const auth = useAuthStore()
+
+const permissions = ref<string[]>([])
+const canDrop = computed(() => permissions.value.includes('drop'))
 
 const md = new MarkdownIt({
   html: true,
@@ -139,7 +145,42 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+
+  // 获取当前用户权限
+  if (auth.isLoggedIn && auth.id !== null) {
+    try {
+      const resp = await fetch(`/api/user/permissions?user_id=${auth.id}`)
+      if (resp.ok) {
+        const data = await resp.json()
+        permissions.value = data.permissions || []
+      }
+    } catch { /* 权限获取失败静默 */ }
+  }
 })
+
+/// 删除当前博客
+async function deleteBlog() {
+  if (!canDrop.value) {
+    alert('当前用户无 drop 权限，无法删除博客')
+    return
+  }
+  if (!window.confirm('确定要删除这篇博客吗？此操作不可撤销。')) return
+  const fp = route.params.file_path as string
+  const resp = await fetch('/api/blog/delete', {
+    method: 'DELETE',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${auth.token}`,
+    },
+    body: JSON.stringify({ file_path: fp }),
+  })
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ error: '删除失败' }))
+    alert(err.error || '删除失败')
+    return
+  }
+  router.push({ name: 'blogs' })
+}
 
 watch(renderedContent, async () => {
   await nextTick()
@@ -153,15 +194,20 @@ watch(renderedContent, async () => {
     <p v-else-if="!blog" class="blog-detail__status">博客不存在</p>
     <div v-else class="blog-detail__layout">
       <!-- 左侧：元信息 -->
-      <aside class="blog-detail__side glass">
-        <h1 class="blog-detail__title">{{ blog.title }}</h1>
-        <p v-if="blog.description" class="blog-detail__desc">{{ blog.description }}</p>
-        <p v-if="blog.category" class="blog-category">{{ blog.category }}</p>
-        <div class="blog-tags">
-          <span v-for="tag in blog.tags" :key="tag" class="blog-tag">{{ tag }}</span>
+      <div class="blog-detail__left">
+        <aside class="blog-detail__side glass">
+          <h1 class="blog-detail__title">{{ blog.title }}</h1>
+          <p v-if="blog.description" class="blog-detail__desc">{{ blog.description }}</p>
+          <p v-if="blog.category" class="blog-category">{{ blog.category }}</p>
+          <div class="blog-tags">
+            <span v-for="tag in blog.tags" :key="tag" class="blog-tag">{{ tag }}</span>
+          </div>
+          <time class="blog-detail__time">{{ blog.update_time }}</time>
+        </aside>
+        <div class="blog-detail__actions">
+          <button class="blog-detail__delete-btn" @click="deleteBlog">删除博客</button>
         </div>
-        <time class="blog-detail__time">{{ blog.update_time }}</time>
-      </aside>
+      </div>
 
       <!-- 中间：正文 -->
       <article v-if="blog.content" class="blog-detail__content glass" v-html="renderedContent"></article>
@@ -218,6 +264,12 @@ watch(renderedContent, async () => {
 }
 
 /* ── 左侧 ── */
+.blog-detail__left {
+  position: sticky;
+  top: 120px;
+  align-self: start;
+}
+
 .blog-detail__side {
   gap: 16px;
   margin-top: 8px;
@@ -240,6 +292,28 @@ watch(renderedContent, async () => {
 .blog-detail__time {
   font-size: 0.8rem;
   color: var(--color-text-secondary);
+}
+
+.blog-detail__actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.blog-detail__delete-btn {
+  padding: 8px 0;
+  width: 100%;
+  border: none;
+  border-radius: 4px;
+  background: #d44;
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.blog-detail__delete-btn:hover {
+  opacity: 0.85;
 }
 
 /* ── 中间正文 ── */
