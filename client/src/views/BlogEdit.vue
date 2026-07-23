@@ -90,6 +90,9 @@ async function saveBlog() {
     return
   }
 
+  // 每次保存时重置标志，确保本轮保存触发新的跳转提示
+  savedSuccessfully.value = false
+
   const tagList = tags.value.split(',').map(s => s.trim()).filter(Boolean)
   const content = editorRef.value?.innerText || ''
 
@@ -155,7 +158,9 @@ async function saveBlog() {
   }
   savedSuccessfully.value = true
   const filePath = `${pathCategory.value}/${pathName.value}`
-  router.push({ name: 'blog-detail', params: { file_path: filePath } })
+  if (window.confirm('保存成功！是否立即跳转到博客页面？')) {
+    router.push({ name: 'blog-detail', params: { file_path: filePath } })
+  }
 }
 </script>
 
