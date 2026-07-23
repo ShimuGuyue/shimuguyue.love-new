@@ -549,7 +549,8 @@ void setup_routes(httplib::Server& svr, pqxx::connection& conn)
                 body.value("scale", 1.0),
                 body.value("rotation", 0.0),
                 body.value("pos_x", 50.0),
-                body.value("pos_y", 50.0)
+                body.value("pos_y", 50.0),
+                body.value("z", 0)
             );
             if (!err.empty()) {
                 res.status = 500;

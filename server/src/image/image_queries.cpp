@@ -44,7 +44,7 @@ auto get_all_images(pqxx::connection& conn) -> nlohmann::json
 {
     pqxx::work txn{ conn };
     const auto rows = txn.exec(
-        "SELECT id, path, description, scale, rotation, pos_x, pos_y "
+        "SELECT id, path, description, scale, rotation, pos_x, pos_y, z "
         "FROM images "
         "ORDER BY id"
     );
@@ -61,6 +61,7 @@ auto get_all_images(pqxx::connection& conn) -> nlohmann::json
         item["rotation"]    = row["rotation"].as<double>();
         item["pos_x"]       = row["pos_x"].as<double>();
         item["pos_y"]       = row["pos_y"].as<double>();
+        item["z"]           = row["z"].as<int>();
         arr.push_back(std::move(item));
     }
     return arr;
@@ -73,28 +74,31 @@ auto save_image(
     double             scale,
     double             rotation,
     double             pos_x,
-    double             pos_y)
+    double             pos_y,
+    int                z)
 -> std::string
 {
     pqxx::work txn{ conn };
 
     // UPSERT: 存在则更新元数据，不存在则插入
     txn.exec(
-        "INSERT INTO images (path, description, scale, rotation, pos_x, pos_y) "
-        "VALUES ($1, $2, $3, $4, $5, $6) "
+        "INSERT INTO images (path, description, scale, rotation, pos_x, pos_y, z) "
+        "VALUES ($1, $2, $3, $4, $5, $6, $7) "
         "ON CONFLICT (path) DO UPDATE SET "
         "description = EXCLUDED.description, "
         "scale       = EXCLUDED.scale, "
         "rotation    = EXCLUDED.rotation, "
         "pos_x       = EXCLUDED.pos_x, "
-        "pos_y       = EXCLUDED.pos_y",
+        "pos_y       = EXCLUDED.pos_y, "
+        "z           = EXCLUDED.z",
         pqxx::params{
             std::string{path},
             std::string{description},
             scale,
             rotation,
             pos_x,
-            pos_y
+            pos_y,
+            z
         }
     );
 

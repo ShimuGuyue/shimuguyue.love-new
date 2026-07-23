@@ -48,7 +48,8 @@ void init();
     double             scale,
     double             rotation,
     double             pos_x,
-    double             pos_y)
+    double             pos_y,
+    int                z)
 -> std::string;
 
 

@@ -14,6 +14,7 @@ interface ImageItem {
   rotation: number
   pos_x: number
   pos_y: number
+  z: number
 }
 
 const images = ref<ImageItem[]>([])
@@ -81,6 +82,13 @@ const dragStart = ref({ x: 0, y: 0 })
 const editSnapshot = ref<string>('')
 /// 待删除的图片 id 集合（完成编辑时统一删除）
 const pendingDeletes = ref<Set<number>>(new Set())
+/// z-index 计数器，每次交互递增
+let zCounter = 1
+
+function bringToFront(imgId: number) {
+  const img = images.value.find(i => i.id === imgId)
+  if (img) img.z = ++zCounter
+}
 
 /// 点击空白处进入编辑模式
 function onWallClick(e: MouseEvent) {
@@ -174,6 +182,7 @@ async function saveMeta(img: ImageItem) {
       rotation: img.rotation,
       pos_x: img.pos_x,
       pos_y: img.pos_y,
+      z: img.z,
     }),
   })
 }
@@ -181,6 +190,7 @@ async function saveMeta(img: ImageItem) {
 // ── 拖拽 ──
 function onImgMouseDown(e: MouseEvent, imgId: number) {
   if (!editMode.value) return
+  bringToFront(imgId)
   draggingId.value = imgId
   dragStart.value = { x: e.clientX, y: e.clientY }
   e.preventDefault()
@@ -243,6 +253,7 @@ async function uploadImage() {
 // ── 滚轮缩放/旋转 ──
 function onImgWheel(e: WheelEvent, imgId: number) {
   if (!editMode.value) return
+  bringToFront(imgId)
   e.preventDefault()
   e.stopPropagation()
   const img = images.value.find(i => i.id === imgId)
@@ -313,7 +324,7 @@ function imgStyle(img: ImageItem) {
           v-for="img in images"
           :key="img.id"
           class="home__img"
-          :style="imgStyle(img)"
+          :style="{ left: img.pos_x + '%', top: img.pos_y + '%', zIndex: img.z || 0 }"
         >
           <div
             class="home__img-wrap"

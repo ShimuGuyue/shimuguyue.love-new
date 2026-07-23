@@ -17,7 +17,8 @@ CREATE TABLE images (
     scale       REAL    NOT NULL DEFAULT 1.0,
     rotation    REAL    NOT NULL DEFAULT 0.0,
     pos_x       REAL    NOT NULL DEFAULT 50.0,
-    pos_y       REAL    NOT NULL DEFAULT 50.0
+    pos_y       REAL    NOT NULL DEFAULT 50.0,
+    z           INTEGER NOT NULL DEFAULT 0
 );
 
 COMMENT ON TABLE  images IS '照片墙图片表';
