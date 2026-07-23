@@ -271,6 +271,11 @@ function onImgWheel(e: WheelEvent, imgId: number) {
   }
 }
 
+function handleImgClick(imgId: number, event: MouseEvent) {
+  if (wasDragged) { wasDragged = false; return }
+  openPreview(imgId, event)
+}
+
 function openPreview(id: number, event: MouseEvent) {
   const el = event.currentTarget as HTMLElement
   previewSrcRect.value = el.getBoundingClientRect()
@@ -347,7 +352,7 @@ function imgStyle(img: ImageItem) {
             :class="{ 'home__img--edit': editMode, 'home__img-wrap--pending': editMode && pendingDeletes.has(img.id) }"
             :style="{ transform: `scale(${img.scale}) rotate(${img.rotation}deg)` }"
             @mousedown="e => onImgMouseDown(e, img.id)"
-            @click.stop="if (!wasDragged) openPreview(img.id, $event); wasDragged = false"
+            @click.stop="handleImgClick(img.id, $event)"
             @wheel.prevent="e => onImgWheel(e, img.id)"
           >
             <img
@@ -380,12 +385,15 @@ function imgStyle(img: ImageItem) {
       </div>
     </Transition>
     <Transition name="preview">
-      <div v-if="previewImage" class="home__preview-desc glass">
+      <div
+        v-if="previewImage"
+        class="home__preview-desc"
+        :style="{ backgroundImage: 'url(/image/note-background.png)' }"
+      >
         <textarea
           v-if="editMode && permissions.includes('edit')"
           v-model="editDesc"
           class="home__preview-textarea"
-          rows="4"
           @click.stop
         />
         <span v-else>{{ previewImage.description }}</span>
@@ -415,9 +423,9 @@ function imgStyle(img: ImageItem) {
   user-select: none;
 }
 
-.home__info {
-  /* 右侧信息栏 */
-}
+/* .home__info {
+  右侧信息栏
+} */
 
 .home__img {
   position: absolute;
@@ -561,24 +569,48 @@ function imgStyle(img: ImageItem) {
   transform: translateY(-50%);
   z-index: 2001;
   padding: 24px;
-  max-width: 260px;
+  width: 256px;
+  height: 256px;
   font-size: 1rem;
   color: var(--color-text);
   line-height: 1.8;
+  background-size: contain;
+  background-position: center;
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center;     /* 垂直居中 */
 }
 
 .home__preview-textarea {
-  width: 100%;
+  width: 80%;
+  height: 80%;
+  transform: translateY(20px);
   background: transparent;
-  border: 1px solid var(--color-border);
-  border-radius: 4px;
+  border: none;
   color: var(--color-text);
   font-size: 1rem;
   line-height: 1.8;
   padding: 8px;
-  resize: vertical;
+  resize: none;
   outline: none;
-  font-family: inherit;
+  font-family: "仿宋", FangSong, serif;
+  font-weight: bold;
+  box-sizing: border-box;
+}
+
+.home__preview-desc span {
+  display: block;
+  width: 80%;
+  height: 80%;
+  transform: translateY(20px);
+  font-family: "仿宋", FangSong, serif;
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--color-text);
+  padding: 8px;
+  box-sizing: border-box;
+  word-break: break-word;
 }
 </style>
 
