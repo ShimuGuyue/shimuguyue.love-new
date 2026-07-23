@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -11,6 +12,43 @@ const tags = ref('')
 const pathCategory = ref('')
 const pathName = ref('')
 const editorRef = ref<HTMLDivElement | null>(null)
+
+/// 判断是否有任何字段非空（有内容就拦截离开）
+function hasContent(): boolean {
+  if (title.value || description.value || category.value || tags.value ||
+      pathCategory.value || pathName.value) return true
+  if (editorRef.value?.textContent?.trim()) return true
+  return false
+}
+
+/// 浏览器级拦截：刷新 / 关闭标签页 / 外部导航
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (hasContent()) {
+    e.preventDefault()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', onBeforeUnload)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', onBeforeUnload)
+})
+
+/// Vue Router 组件内导航守卫：SPA 页面跳转
+onBeforeRouteLeave((_to, _from, next) => {
+  if (!hasContent()) {
+    next()
+    return
+  }
+  const discard = window.confirm('丢弃所有更改？\n\n您填写的内容将不会被保存。')
+  if (discard) {
+    next()
+  } else {
+    next(false)
+  }
+})
 
 async function importFile() {
   const input = document.createElement('input')
