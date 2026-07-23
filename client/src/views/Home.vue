@@ -181,6 +181,10 @@ function onWallMouseUp() {
   draggingId.value = null
 }
 
+function onWallWheel(e: WheelEvent) {
+  if (e.ctrlKey) e.preventDefault()
+}
+
 // ── 滚轮缩放/旋转 ──
 function onImgWheel(e: WheelEvent, imgId: number) {
   if (!editMode.value) return
@@ -224,6 +228,7 @@ function imgStyle(img: ImageItem) {
         @mousemove="onWallMouseMove"
         @mouseup="onWallMouseUp"
         @mouseleave="onWallMouseUp"
+        @wheel="onWallWheel"
       >
         <button v-if="editMode" class="home__edit-done" @click.stop="exitEdit">完成编辑</button>
         <button v-if="editMode" class="home__edit-cancel" @click.stop="cancelEdit">取消编辑</button>
