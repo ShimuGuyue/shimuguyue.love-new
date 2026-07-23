@@ -93,14 +93,17 @@ async function exitEdit() {
     if (!permissions.value.includes('edit')) {
       alert('当前用户无 edit 权限，修改无法生效')
       revertChanges()
-      editMode.value = false
-      return
-    }
-    // 保存所有变更
-    for (const img of images.value) {
-      await saveMeta(img)
+    } else {
+      for (const img of images.value) {
+        await saveMeta(img)
+      }
     }
   }
+  editMode.value = false
+}
+
+function cancelEdit() {
+  revertChanges()
   editMode.value = false
 }
 
@@ -219,6 +222,7 @@ function imgStyle(img: ImageItem) {
         @mouseleave="onWallMouseUp"
       >
         <button v-if="editMode" class="home__edit-done" @click.stop="exitEdit">完成编辑</button>
+        <button v-if="editMode" class="home__edit-cancel" @click.stop="cancelEdit">取消编辑</button>
         <div v-if="editMode" class="home__hint">
           <p>拖拽：按住图片拖动</p>
           <p>缩放：滚轮</p>
@@ -321,6 +325,20 @@ function imgStyle(img: ImageItem) {
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.25);
   color: var(--color-text);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.home__edit-cancel {
+  position: absolute;
+  top: 12px;
+  right: 100px;
+  z-index: 100;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--color-text-secondary);
   font-size: 0.8rem;
   cursor: pointer;
 }
