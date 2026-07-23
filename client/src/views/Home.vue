@@ -218,6 +218,11 @@ function imgStyle(img: ImageItem) {
         @mouseleave="onWallMouseUp"
       >
         <button v-if="editMode" class="home__edit-done" @click.stop="exitEdit">完成编辑</button>
+        <div v-if="editMode" class="home__hint">
+          <p>拖拽：按住图片拖动</p>
+          <p>缩放：滚轮</p>
+          <p>旋转：Shift + 滚轮</p>
+        </div>
         <div
           v-for="img in images"
           :key="img.id"
@@ -316,6 +321,22 @@ function imgStyle(img: ImageItem) {
   color: var(--color-text);
   font-size: 0.8rem;
   cursor: pointer;
+}
+
+.home__hint {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  z-index: 100;
+  padding: 8px 14px;
+  border-radius: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--color-text-secondary);
+  font-size: 0.75rem;
+  line-height: 1.7;
+}
+.home__hint p {
+  margin: 0;
 }
 
 .home__preview {
