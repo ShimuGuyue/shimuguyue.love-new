@@ -29,3 +29,4 @@ COMMENT ON COLUMN images.scale       IS '缩放比例';
 COMMENT ON COLUMN images.rotation    IS '旋转角度（度）';
 COMMENT ON COLUMN images.pos_x       IS '水平坐标（百分比 0-100）';
 COMMENT ON COLUMN images.pos_y       IS '垂直坐标（百分比 0-100）';
+COMMENT ON COLUMN images.z           IS '图片层级';
