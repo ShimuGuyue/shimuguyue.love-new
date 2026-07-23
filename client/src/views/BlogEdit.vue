@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { onBeforeRouteLeave, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
+const router = useRouter()
 
 const title = ref('')
 const description = ref('')
@@ -11,6 +13,45 @@ const tags = ref('')
 const pathCategory = ref('')
 const pathName = ref('')
 const editorRef = ref<HTMLDivElement | null>(null)
+const savedSuccessfully = ref(false)
+
+/// 判断是否有任何字段非空（有内容就拦截离开）
+function hasContent(): boolean {
+  if (savedSuccessfully.value) return false
+  if (title.value || description.value || category.value || tags.value ||
+      pathCategory.value || pathName.value) return true
+  if (editorRef.value?.textContent?.trim()) return true
+  return false
+}
+
+/// 浏览器级拦截：刷新 / 关闭标签页 / 外部导航
+function onBeforeUnload(e: BeforeUnloadEvent) {
+  if (hasContent()) {
+    e.preventDefault()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('beforeunload', onBeforeUnload)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('beforeunload', onBeforeUnload)
+})
+
+/// Vue Router 组件内导航守卫：SPA 页面跳转
+onBeforeRouteLeave((_to, _from, next) => {
+  if (!hasContent()) {
+    next()
+    return
+  }
+  const discard = window.confirm('丢弃所有更改？\n\n您填写的内容将不会被保存。')
+  if (discard) {
+    next()
+  } else {
+    next(false)
+  }
+})
 
 async function importFile() {
   const input = document.createElement('input')
@@ -48,6 +89,9 @@ async function saveBlog() {
     alert('请先登录')
     return
   }
+
+  // 每次保存时重置标志，确保本轮保存触发新的跳转提示
+  savedSuccessfully.value = false
 
   const tagList = tags.value.split(',').map(s => s.trim()).filter(Boolean)
   const content = editorRef.value?.innerText || ''
@@ -112,7 +156,11 @@ async function saveBlog() {
     alert(err.error || '保存失败')
     return
   }
-  alert('保存成功')
+  savedSuccessfully.value = true
+  const filePath = `${pathCategory.value}/${pathName.value}`
+  if (window.confirm('保存成功！是否立即跳转到博客页面？')) {
+    router.push({ name: 'blog-detail', params: { file_path: filePath } })
+  }
 }
 </script>
 
