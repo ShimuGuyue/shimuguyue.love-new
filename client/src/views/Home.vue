@@ -32,6 +32,7 @@ const previewSrcRect = ref<DOMRect | null>(null)
 watch(previewImage, async (img) => {
   if (!img || !previewSrcRect.value) return
   await nextTick()
+  await new Promise(r => requestAnimationFrame(r))
   const el = document.querySelector('.home__preview-img') as HTMLElement | null
   if (!el) return
   const start = previewSrcRect.value
