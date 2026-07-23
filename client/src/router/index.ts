@@ -9,6 +9,7 @@ import LoginPassword from '@/views/LoginPassword.vue'
 import Profile from '@/views/Profile.vue'
 import BlogDetail from '@/views/BlogDetail.vue'
 import BlogEdit from '@/views/BlogEdit.vue'
+import Acknowledgments from '@/views/Acknowledgments.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -18,6 +19,7 @@ const router = createRouter({
     { path: '/projects', name: 'projects', component: Projects },
     { path: '/favorites', name: 'favorites', component: Favorites },
     { path: '/about', name: 'about', component: About },
+    { path: '/thanks', name: 'acknowledgments', component: Acknowledgments },
     { path: '/login/key', name: 'login-key', component: LoginKey },
     { path: '/login/password', name: 'login-password', component: LoginPassword },
     { path: '/profile', name: 'profile', component: Profile },

@@ -50,6 +50,7 @@ html {
 html::-webkit-scrollbar {
   display: none;
 }
+
 </style>
 
 <style>

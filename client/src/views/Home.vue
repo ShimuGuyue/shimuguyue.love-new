@@ -368,7 +368,9 @@ function imgStyle(img: ImageItem) {
           </div>
         </div>
       </div>
-      <div class="home__info"></div>
+      <div class="home__info">
+        <RouterLink to="/thanks" class="home__info-link">致谢</RouterLink>
+      </div>
     </div>
 
     <Transition name="preview">
@@ -426,6 +428,19 @@ function imgStyle(img: ImageItem) {
 /* .home__info {
   右侧信息栏
 } */
+
+.home__info-link {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.home__info-link:hover {
+  color: var(--pink-hot);
+}
 
 .home__img {
   position: absolute;
