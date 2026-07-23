@@ -406,4 +406,76 @@ auto save_blog(
     return {};
 }
 
+auto delete_blog(
+    pqxx::connection& conn,
+    std::string_view  file_path)
+-> std::string
+{
+    if (file_path.empty())
+        return "缺少 file_path 参数";
+
+    pqxx::work txn{ conn };
+
+    // 1. 查找博客，获取 id 和 category_id
+    const auto blog_row = txn.exec(
+        "SELECT id, category_id FROM blogs WHERE file_path = $1",
+        pqxx::params{ std::string{file_path} }
+    );
+    if (blog_row.empty())
+        return "博客不存在";
+
+    const int blog_id     = blog_row[0]["id"].as<int>();
+    const int category_id = blog_row[0]["category_id"].is_null()
+        ? 0 : blog_row[0]["category_id"].as<int>();
+
+    // 2. 记录该博客关联的 tag_id 列表
+    const auto tag_rows = txn.exec(
+        "SELECT tag_id FROM blog_tags WHERE blog_id = $1",
+        pqxx::params{ blog_id }
+    );
+    std::vector<int> tag_ids;
+    tag_ids.reserve(tag_rows.size());
+    for (const auto& tr : tag_rows)
+        tag_ids.push_back(tr["tag_id"].as<int>());
+
+    // 3. 删除博客（CASCADE 自动删除 blog_tags 关联）
+    txn.exec("DELETE FROM blogs WHERE id = $1", pqxx::params{ blog_id });
+
+    // 4. 清理无关联的标签
+    for (int tid : tag_ids)
+    {
+        const auto ref = txn.exec(
+            "SELECT 1 FROM blog_tags WHERE tag_id = $1 LIMIT 1",
+            pqxx::params{ tid }
+        );
+        if (ref.empty())
+            txn.exec("DELETE FROM tags WHERE id = $1", pqxx::params{ tid });
+    }
+
+    // 5. 清理无博客的分类
+    if (category_id > 0)
+    {
+        const auto cat_ref = txn.exec(
+            "SELECT 1 FROM blogs WHERE category_id = $1 LIMIT 1",
+            pqxx::params{ category_id }
+        );
+        if (cat_ref.empty())
+            txn.exec("DELETE FROM categories WHERE id = $1", pqxx::params{ category_id });
+    }
+
+    txn.commit();
+
+    // 6. 删除 .md 文件及空目录（失败不影响数据库操作）
+    {
+        std::error_code ec;
+        std::filesystem::path md_path{
+            std::format("{}/blogs/{}.md", md::doc_path(), file_path)
+        };
+        std::filesystem::remove(md_path, ec);
+        std::filesystem::remove(md_path.parent_path(), ec);
+    }
+
+    return {};
+}
+
 } // namespace blog

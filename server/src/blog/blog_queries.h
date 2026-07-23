@@ -99,6 +99,24 @@ struct BlogQuery
  -> std::optional<BlogItem>;
 
 /**
+ * @brief 删除博客及相关元数据，同时删除 .md 文件。
+ *
+ * 删除顺序：
+ * 1. 删除博客记录（CASCADE 自动删除 blog_tags 关联）。
+ * 2. 删除已无关联的标签。
+ * 3. 删除已无博客的分类。
+ * 4. 删除服务器上的 .md 文件。
+ *
+ * @param conn      数据库连接。
+ * @param file_path 博客文件相对路径。
+ * @return 错误消息字符串（空表示成功）。
+ */
+[[nodiscard]] auto delete_blog(
+    pqxx::connection& conn,
+    std::string_view  file_path)
+-> std::string;
+
+/**
  * @brief 保存博客及关联元数据，同时写入 .md 文件。
  * @param conn                数据库连接。
  * @param title               标题。
@@ -112,15 +130,15 @@ struct BlogQuery
  * @return 错误消息字符串（空表示成功）。
  */
 [[nodiscard]] auto save_blog(
-    pqxx::connection&         conn,
-    std::string_view          title,
-    std::string_view          description,
-    std::string_view          category_name,
+    pqxx::connection&               conn,
+    std::string_view                title,
+    std::string_view                description,
+    std::string_view                category_name,
     const std::vector<std::string>& tag_names,
-    std::string_view          file_path_category,
-    std::string_view          file_path_name,
-    std::string_view          content,
-    std::string_view          date)
+    std::string_view                file_path_category,
+    std::string_view                file_path_name,
+    std::string_view                content,
+    std::string_view                date)
 -> std::string;
 
 } // namespace blog
