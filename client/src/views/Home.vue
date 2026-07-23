@@ -230,9 +230,25 @@ function imgStyle(img: ImageItem) {
         @mouseleave="onWallMouseUp"
         @wheel="onWallWheel"
       >
-        <button v-if="editMode" class="home__edit-done" @click.stop="exitEdit">完成编辑</button>
-        <button v-if="editMode" class="home__edit-cancel" @click.stop="cancelEdit">取消编辑</button>
-        <div v-if="editMode" class="home__hint">
+        <button
+          v-if="editMode" class="home__edit-done"
+          :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }"
+          @click.stop="exitEdit"
+        >完成编辑</button>
+        <button
+          v-if="editMode" class="home__edit-upload"
+          :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }"
+          @click.stop="uploadImage"
+        >上传图片</button>
+        <button
+          v-if="editMode" class="home__edit-cancel"
+          :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }"
+          @click.stop="cancelEdit"
+        >取消编辑</button>
+        <div
+          v-if="editMode" class="home__hint"
+          :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }"
+        >
           <p>拖拽：按住图片拖动</p>
           <p>缩放：滚轮</p>
           <p>旋转：Shift + 滚轮</p>
@@ -332,8 +348,20 @@ function imgStyle(img: ImageItem) {
   padding: 6px 16px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.25);
   color: var(--color-text);
+  font-size: 0.8rem;
+  cursor: pointer;
+}
+
+.home__edit-upload {
+  position: absolute;
+  top: 12px;
+  right: 200px;
+  z-index: 100;
+  padding: 6px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--pink-soft);
   font-size: 0.8rem;
   cursor: pointer;
 }
@@ -346,7 +374,6 @@ function imgStyle(img: ImageItem) {
   padding: 6px 16px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.25);
   color: var(--color-text-secondary);
   font-size: 0.8rem;
   cursor: pointer;
@@ -359,7 +386,6 @@ function imgStyle(img: ImageItem) {
   z-index: 100;
   padding: 8px 14px;
   border-radius: 4px;
-  background: rgba(0, 0, 0, 0.25);
   color: var(--color-text-secondary);
   font-size: 0.75rem;
   line-height: 1.7;
