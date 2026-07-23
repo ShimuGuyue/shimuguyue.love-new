@@ -98,7 +98,7 @@ function onWallClick(e: MouseEvent) {
   editMode.value = true
   // 保存快照
   editSnapshot.value = JSON.stringify(images.value.map(i => ({
-    id: i.id, pos_x: i.pos_x, pos_y: i.pos_y, scale: i.scale, rotation: i.rotation,
+    id: i.id, pos_x: i.pos_x, pos_y: i.pos_y, scale: i.scale, rotation: i.rotation, description: i.description,
   })))
 }
 
@@ -144,11 +144,11 @@ function cancelEdit() {
 
 function hasChanges(): boolean {
   try {
-    const snap = JSON.parse(editSnapshot.value) as Pick<ImageItem, 'id' | 'pos_x' | 'pos_y' | 'scale' | 'rotation'>[]
+    const snap = JSON.parse(editSnapshot.value) as Pick<ImageItem, 'id' | 'pos_x' | 'pos_y' | 'scale' | 'rotation' | 'description'>[]
     for (const img of images.value) {
       const s = snap.find(s => s.id === img.id)
       if (!s) return true
-      if (s.pos_x !== img.pos_x || s.pos_y !== img.pos_y || s.scale !== img.scale || s.rotation !== img.rotation) return true
+      if (s.pos_x !== img.pos_x || s.pos_y !== img.pos_y || s.scale !== img.scale || s.rotation !== img.rotation || s.description !== img.description) return true
     }
     return false
   } catch { return false }
@@ -156,7 +156,7 @@ function hasChanges(): boolean {
 
 function revertChanges() {
   try {
-    const snap = JSON.parse(editSnapshot.value) as Pick<ImageItem, 'id' | 'pos_x' | 'pos_y' | 'scale' | 'rotation'>[]
+    const snap = JSON.parse(editSnapshot.value) as Pick<ImageItem, 'id' | 'pos_x' | 'pos_y' | 'scale' | 'rotation' | 'description'>[]
     for (const s of snap) {
       const img = images.value.find(i => i.id === s.id)
       if (img) {
@@ -164,6 +164,7 @@ function revertChanges() {
         img.pos_y = s.pos_y
         img.scale = s.scale
         img.rotation = s.rotation
+        img.description = s.description ?? ''
       }
     }
   } catch { /* 静默 */ }
@@ -198,8 +199,11 @@ function onImgMouseDown(e: MouseEvent, imgId: number) {
   e.stopPropagation()
 }
 
+let wasDragged = false
+
 function onWallMouseMove(e: MouseEvent) {
   if (draggingId.value === null) return
+  wasDragged = true
   const wall = (e.currentTarget as HTMLElement).getBoundingClientRect()
   const img = images.value.find(i => i.id === draggingId.value)
   if (!img) return
@@ -271,8 +275,19 @@ function openPreview(id: number, event: MouseEvent) {
   const el = event.currentTarget as HTMLElement
   previewSrcRect.value = el.getBoundingClientRect()
   previewId.value = id
+  if (editMode.value) {
+    const img = images.value.find(i => i.id === id)
+    if (img) editDesc.value = img.description
+  }
 }
+
+/// 编辑中的描述文本
+const editDesc = ref('')
 function closePreview() {
+  if (editMode.value && previewId.value !== null) {
+    const img = images.value.find(i => i.id === previewId.value)
+    if (img) img.description = editDesc.value
+  }
   previewId.value = null
   previewSrcRect.value = null
 }
@@ -332,7 +347,7 @@ function imgStyle(img: ImageItem) {
             :class="{ 'home__img--edit': editMode, 'home__img-wrap--pending': editMode && pendingDeletes.has(img.id) }"
             :style="{ transform: `scale(${img.scale}) rotate(${img.rotation}deg)` }"
             @mousedown="e => onImgMouseDown(e, img.id)"
-            @click.stop="!editMode && openPreview(img.id, $event)"
+            @click.stop="if (!wasDragged) openPreview(img.id, $event); wasDragged = false"
             @wheel.prevent="e => onImgWheel(e, img.id)"
           >
             <img
@@ -366,7 +381,14 @@ function imgStyle(img: ImageItem) {
     </Transition>
     <Transition name="preview">
       <div v-if="previewImage" class="home__preview-desc glass">
-        {{ previewImage.description || '暂无简介' }}
+        <textarea
+          v-if="editMode && permissions.includes('edit')"
+          v-model="editDesc"
+          class="home__preview-textarea"
+          rows="4"
+          @click.stop
+        />
+        <span v-else>{{ previewImage.description }}</span>
       </div>
     </Transition>
   </main>
@@ -543,6 +565,20 @@ function imgStyle(img: ImageItem) {
   font-size: 1rem;
   color: var(--color-text);
   line-height: 1.8;
+}
+
+.home__preview-textarea {
+  width: 100%;
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  color: var(--color-text);
+  font-size: 1rem;
+  line-height: 1.8;
+  padding: 8px;
+  resize: vertical;
+  outline: none;
+  font-family: inherit;
 }
 </style>
 
