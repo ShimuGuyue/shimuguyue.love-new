@@ -13,5 +13,14 @@ AGENTS.md
 
 ### Test File
 
-**/test/
-**/test.*
+**/[Tt][Ee][Ss][Tt]/
+**/[Tt][Ee][Ss][Tt].*
+**/*.[Tt][Ee][Ss][Tt]
+
+**/[Ll][Oo][Gg]/
+**/*.[Ll][Oo][Gg]
+**/*.[Ll][Oo][Gg].*
+
+### TODO LIST
+
+**/[Tt][Oo][Dd][Oo].*
