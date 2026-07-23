@@ -389,6 +389,7 @@ function imgStyle(img: ImageItem) {
   position: relative;
   overflow: hidden;
   min-height: 100%;
+  user-select: none;
 }
 
 .home__info {
