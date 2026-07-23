@@ -181,10 +181,11 @@ function onImgWheel(e: WheelEvent, imgId: number) {
   e.stopPropagation()
   const img = images.value.find(i => i.id === imgId)
   if (!img) return
+  const speed = e.ctrlKey ? 10 : 1
   if (e.shiftKey) {
-    img.rotation = (img.rotation + e.deltaY * 0.5 + 360) % 360
+    img.rotation = (img.rotation + e.deltaY * 0.01 * speed + 360) % 360
   } else {
-    img.scale = Math.max(0.1, Math.min(5, img.scale - e.deltaY * 0.005))
+    img.scale = Math.max(0.1, Math.min(5, img.scale - e.deltaY * 0.0001 * speed))
   }
 }
 
@@ -222,6 +223,7 @@ function imgStyle(img: ImageItem) {
           <p>拖拽：按住图片拖动</p>
           <p>缩放：滚轮</p>
           <p>旋转：Shift + 滚轮</p>
+          <p>加速：按住 Ctrl 使缩放和旋转速度加快</p>
         </div>
         <div
           v-for="img in images"
