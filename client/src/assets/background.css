@@ -22,8 +22,15 @@
   --herrscher-gold:       #CFA668; /* 锈蚀暗金 */
 }
 
-/* ── 2. 亮色模式：爱莉主场 (5 粉 : 1 紫) ── */
-body {
+/* ── 2. 固定背景层（用 ::before 伪元素避免 background-attachment: fixed 破坏 backdrop-filter） ── */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+
+  /* 亮色模式：爱莉主场 (5 粉 : 1 紫) */
   background-color: var(--elysia-base);
 
   background-image:
@@ -43,12 +50,12 @@ body {
     radial-gradient(circle at 50% 75%, rgba(228, 191, 131, 0.3)  0%, transparent 45%); /* gold */
 
   background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-  background-attachment: fixed;
   background-blend-mode: overlay, overlay, normal, normal, normal, normal, normal, normal, normal;
 }
 
-/* ── 3. 暗色模式：侵蚀主场 (5 紫 : 1 粉) ── */
-html.dark body {
+/* ── 3. 暗色模式背景层 ── */
+html.dark body::before {
+  /* 暗色模式：侵蚀主场 (5 紫 : 1 粉) */
   background-color: var(--herrscher-base);
 
   background-image:
@@ -68,6 +75,5 @@ html.dark body {
     radial-gradient(circle at 50% 75%, rgba(207, 166, 104, 0.2)  0%, transparent 45%); /* gold */
 
   background-size: 24px 24px, 24px 24px, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
-  background-attachment: fixed;
   background-blend-mode: screen, screen, normal, normal, normal, normal, normal, normal, normal;
 }
