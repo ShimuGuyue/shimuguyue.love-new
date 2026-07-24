@@ -76,6 +76,9 @@ onUnmounted(() => {
   }
 })
 
+/// 图片逐个渲染的间隔和动画时长（毫秒）
+const REVEAL_MS = 500
+
 /// 图片逐个渲染的定时器
 let revealTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -105,7 +108,7 @@ async function revealImages(all: ImageItem[]) {
       if (i >= all.length) { resolve(); return }
       images.value.push(all[i]!)
       i++
-      revealTimer = setTimeout(next, 1000)
+      revealTimer = setTimeout(next, REVEAL_MS)
     }
     next()
   })
@@ -346,7 +349,7 @@ function imgStyle(img: ImageItem) {
 </script>
 
 <template>
-  <main class="home">
+  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms' }">
     <div class="home__layout">
       <div
         class="home__photo glass"
@@ -383,8 +386,8 @@ function imgStyle(img: ImageItem) {
         <div
           v-for="img in images"
           :key="img.id"
-          class="home__img"
-          :style="{ left: img.pos_x + '%', top: img.pos_y + '%', transform: 'translate(-50%, -50%)', zIndex: img.z || 0 }"
+          class="home__img home__img--enter"
+          :style="{ left: img.pos_x + '%', top: img.pos_y + '%', zIndex: img.z || 0 }"
         >
           <div
             class="home__img-wrap"
@@ -484,6 +487,18 @@ function imgStyle(img: ImageItem) {
 .home__img {
   position: absolute;
   cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.home__img--enter {
+  animation: img-pop-in var(--reveal-duration, 0.5s) ease-out both;
+}
+
+@keyframes img-pop-in {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
 }
 .home__img img {
   display: block;
