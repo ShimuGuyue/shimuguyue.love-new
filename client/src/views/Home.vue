@@ -674,7 +674,7 @@ function imgStyle(img: ImageItem) {
   font-size: 18px;
   font-weight: 700;
   color: var(--title-color, #3451b2);
-  text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+  
   display: inline-block;
 
   /* 米哈游 https://www.mihoyo.com/?page=product 同款科技蓝与霓虹粉斜向渐变 */
@@ -707,6 +707,8 @@ function imgStyle(img: ImageItem) {
   font-size: 0.9rem;
   line-height: 1.8;
   resize: none;
+  font-weight: 600;
+  color: var(--title-color, #3451b2);
 }
 
 .home__profile-input[readonly] {
@@ -908,6 +910,8 @@ function imgStyle(img: ImageItem) {
   line-height: 1.8;
   padding: 8px;
   resize: none;
+  font-weight: 600;
+  color: var(--title-color, #3451b2);
   outline: none;
   font-family: "仿宋", FangSong, serif;
   font-weight: bold;
