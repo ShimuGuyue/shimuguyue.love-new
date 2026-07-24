@@ -409,7 +409,7 @@ function imgStyle(img: ImageItem) {
 </script>
 
 <template>
-  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff' }" @click="onWallClick">
+  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff', '--btn-text-color': theme.isDark ? '#fff' : '#000' }" @click="onWallClick">
     <div class="home__layout">
       <div
         :class="{ 'home__photo': true, 'home__photo--edit': editMode }"
@@ -445,7 +445,7 @@ function imgStyle(img: ImageItem) {
         <div
           v-for="img in images"
           :key="img.id"
-          class="home__img home__img--enter"
+          :class="{ 'home__img': true, 'home__img--enter': true, 'home__img--pending': editMode && pendingDeletes.has(img.id) }"
           :style="{ left: img.pos_x + '%', top: img.pos_y + '%', zIndex: img.z || 0 }"
         >
           <div
@@ -464,6 +464,7 @@ function imgStyle(img: ImageItem) {
             <button
               v-if="editMode"
               class="home__img-del"
+              :style="{ transform: `scale(${1 / img.scale})` }"
               @click.stop="markDelete(img)"
             >✕</button>
           </div>
@@ -521,7 +522,6 @@ function imgStyle(img: ImageItem) {
 
 .home__photo {
   position: relative;
-  overflow: hidden;
   min-height: 100%;
   user-select: none;
 }
@@ -558,6 +558,10 @@ function imgStyle(img: ImageItem) {
   animation: img-pop-in var(--reveal-duration, 0.5s) ease-out both;
 }
 
+.home__img--pending {
+  pointer-events: none;
+}
+
 @keyframes img-pop-in {
   from {
     transform: translate(-50%, -50%) scale(0);
@@ -584,11 +588,11 @@ function imgStyle(img: ImageItem) {
 
 .home__img-del {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -8px;
+  right: -8px;
   z-index: 10;
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
   border: none;
   border-radius: 50%;
   background: #d44;
@@ -602,6 +606,7 @@ function imgStyle(img: ImageItem) {
 
 .home__img-wrap--pending {
   opacity: 0;
+  pointer-events: none;
 }
 .home__img-wrap--pending .home__img-del {
   background: #666;
@@ -611,11 +616,11 @@ function imgStyle(img: ImageItem) {
   position: absolute;
   top: 12px;
   right: 12px;
-  z-index: 100;
+  z-index: 9999;
   padding: 6px 16px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--color-text);
+  color: var(--btn-text-color, #333);
   font-size: 0.8rem;
   cursor: pointer;
 }
@@ -624,11 +629,11 @@ function imgStyle(img: ImageItem) {
   position: absolute;
   top: 12px;
   right: 200px;
-  z-index: 100;
+  z-index: 9999;
   padding: 6px 16px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--pink-soft);
+  color: var(--btn-text-color, #333);
   font-size: 0.8rem;
   cursor: pointer;
 }
@@ -637,11 +642,11 @@ function imgStyle(img: ImageItem) {
   position: absolute;
   top: 12px;
   right: 100px;
-  z-index: 100;
+  z-index: 9999;
   padding: 6px 16px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--color-text-secondary);
+  color: var(--btn-text-color, #666);
   font-size: 0.8rem;
   cursor: pointer;
 }
@@ -650,10 +655,10 @@ function imgStyle(img: ImageItem) {
   position: absolute;
   bottom: 12px;
   right: 12px;
-  z-index: 100;
+  z-index: 9999;
   padding: 8px 14px;
   border-radius: 4px;
-  color: var(--color-text-secondary);
+  color: var(--btn-text-color, #666);
   font-size: 0.75rem;
   line-height: 1.7;
 }
