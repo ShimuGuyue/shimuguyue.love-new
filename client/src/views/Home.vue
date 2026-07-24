@@ -349,7 +349,7 @@ function imgStyle(img: ImageItem) {
 </script>
 
 <template>
-  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms' }">
+  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff' }">
     <div class="home__layout">
       <div
         class="home__photo glass"
@@ -504,7 +504,6 @@ function imgStyle(img: ImageItem) {
   display: block;
   max-width: 300px;
   max-height: 300px;
-  border-radius: 4px;
   object-fit: contain;
   pointer-events: none;
   user-select: none;
@@ -513,13 +512,14 @@ function imgStyle(img: ImageItem) {
 .home__img-wrap {
   position: relative;
   cursor: pointer;
+  border: 5px solid var(--img-border, var(--color-border));
+  border-color: var(--img-border);
 }
 
 .home__img--edit {
   cursor: grab;
   outline: 2px dashed var(--pink-soft);
   outline-offset: 4px;
-  border-radius: 4px;
 }
 
 .home__img-del {
