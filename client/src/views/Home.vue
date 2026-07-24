@@ -161,15 +161,26 @@ function bringToFront(imgId: number) {
   if (img) img.z = ++zCounter
 }
 
-/// 点击空白处进入编辑模式
+/// 点击照片墙内进入编辑模式，点击外部退出编辑模式
 function onWallClick(e: MouseEvent) {
-  if (editMode.value) return
-  if ((e.target as HTMLElement).closest('.home__img')) return
-  editMode.value = true
-  // 保存快照
-  editSnapshot.value = JSON.stringify(images.value.map(i => ({
-    id: i.id, pos_x: i.pos_x, pos_y: i.pos_y, scale: i.scale, rotation: i.rotation, description: i.description,
-  })))
+  // 点击预览遮罩时不处理
+  if ((e.target as HTMLElement).closest('.home__preview')) return
+  const inPhoto = !!(e.target as HTMLElement).closest('.home__photo')
+  const onImg = !!(e.target as HTMLElement).closest('.home__img')
+
+  if (editMode.value) {
+    // 编辑模式下：仅点击外部且无修改时退出
+    if (!inPhoto && !hasChanges() && pendingDeletes.value.size === 0) cancelEdit()
+    return
+  }
+
+  // 非编辑模式下：点击照片墙内部（非图片上）进入编辑
+  if (inPhoto && !onImg) {
+    editMode.value = true
+    editSnapshot.value = JSON.stringify(images.value.map(i => ({
+      id: i.id, pos_x: i.pos_x, pos_y: i.pos_y, scale: i.scale, rotation: i.rotation, description: i.description,
+    })))
+  }
 }
 
 async function exitEdit() {
@@ -381,11 +392,10 @@ function imgStyle(img: ImageItem) {
 </script>
 
 <template>
-  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff' }">
+  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff' }" @click="onWallClick">
     <div class="home__layout">
       <div
         :class="{ 'home__photo': true, 'home__photo--edit': editMode }"
-        @click="onWallClick"
         @mousemove="onWallMouseMove"
         @mouseup="onWallMouseUp"
         @mouseleave="onWallMouseUp"
