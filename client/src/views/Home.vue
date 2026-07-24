@@ -448,7 +448,7 @@ function imgStyle(img: ImageItem) {
 </script>
 
 <template>
-  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff', '--btn-text-color': theme.isDark ? '#fff' : '#000' }" @click="onWallClick">
+  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff', '--btn-text-color': '#000', '--title-color': theme.isDark ? '#8899ff' : '#3451b2' }" @click="onWallClick">
     <div class="home__layout">
       <div
         :class="{ 'home__photo': true, 'home__photo--edit': editMode }"
@@ -666,12 +666,15 @@ function imgStyle(img: ImageItem) {
 .home__profile-input--title {
   font-size: 5rem;
   font-weight: 700;
+  color: var(--title-color, #3451b2);
+  text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
 }
 
 .home__profile-input--subtitle {
   font-size: 18px;
   font-weight: 700;
   color: var(--title-color, #3451b2);
+  text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
   display: inline-block;
 
   /* 米哈游 https://www.mihoyo.com/?page=product 同款科技蓝与霓虹粉斜向渐变 */
