@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 
@@ -69,11 +69,46 @@ onMounted(async () => {
   }
 })
 
+onUnmounted(() => {
+  if (revealTimer !== null) {
+    clearTimeout(revealTimer)
+    revealTimer = null
+  }
+})
+
+/// 图片逐个渲染的定时器
+let revealTimer: ReturnType<typeof setTimeout> | null = null
+
 async function loadImages() {
+  // 清除上一次未完成的定时器
+  if (revealTimer !== null) {
+    clearTimeout(revealTimer)
+    revealTimer = null
+  }
+
   try {
     const resp = await fetch('/api/images')
-    if (resp.ok) images.value = await resp.json()
+    if (!resp.ok) return
+    const all: ImageItem[] = await resp.json()
+
+    // 清空后逐张渲染
+    images.value = []
+    await revealImages(all)
   } catch { /* 静默 */ }
+}
+
+/** 每隔约一秒往数组里推入一张图片 */
+async function revealImages(all: ImageItem[]) {
+  return new Promise<void>((resolve) => {
+    let i = 0
+    function next() {
+      if (i >= all.length) { resolve(); return }
+      images.value.push(all[i]!)
+      i++
+      revealTimer = setTimeout(next, 1000)
+    }
+    next()
+  })
 }
 
 const editMode = ref(false)
