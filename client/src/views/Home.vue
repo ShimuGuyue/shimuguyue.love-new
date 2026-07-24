@@ -510,15 +510,8 @@ function imgStyle(img: ImageItem) {
         </div>
       </div>
       <div class="home__info">
-        <!-- 查看模式 -->
-        <template v-if="!profileEditMode">
-          <button class="home__profile-title" @click="enterProfileEdit">{{ profile.title }}</button>
-          <p class="home__profile-subtitle">{{ profile.subtitle }}</p>
-          <p class="home__profile-bio" v-html="profile.bio.replace(/\n/g, '<br>')" />
-        </template>
-        <!-- 编辑模式 -->
-        <div v-else class="home__profile-edit-box">
-          <div class="home__profile-actions">
+        <div class="home__profile-edit-box" :class="{ 'home__profile-edit-box--active': profileEditMode }">
+          <div class="home__profile-actions" :class="{ 'home__profile-actions--hidden': !profileEditMode }">
             <button class="home__profile-btn home__profile-btn--cancel" @click="cancelProfileEdit">取消编辑</button>
             <button
               class="home__profile-btn home__profile-btn--save"
@@ -526,14 +519,15 @@ function imgStyle(img: ImageItem) {
               @click="saveProfile"
             >完成编辑</button>
           </div>
-          <div class="home__profile-field home__profile-field--dashed">
-            <input v-model="profileDraft.title" class="home__profile-input home__profile-input--title" />
+          <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }">
+            <input :value="profileEditMode ? profileDraft.title : profile.title" @input="profileEditMode && (profileDraft.title = ($event.target as HTMLInputElement).value)" :readonly="!profileEditMode" class="home__profile-input home__profile-input--title" @click="!profileEditMode && enterProfileEdit()" />
           </div>
-          <div class="home__profile-field home__profile-field--dashed">
-            <input v-model="profileDraft.subtitle" class="home__profile-input home__profile-input--subtitle" />
+          <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }">
+            <input :value="profileEditMode ? profileDraft.subtitle : profile.subtitle" @input="profileEditMode && (profileDraft.subtitle = ($event.target as HTMLInputElement).value)" :readonly="!profileEditMode" class="home__profile-input home__profile-input--subtitle" />
           </div>
-          <div class="home__profile-field home__profile-field--dashed">
-            <textarea v-model="profileDraft.bio" class="home__profile-input home__profile-input--bio" rows="6" />
+          <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }">
+            <textarea v-if="profileEditMode" v-model="profileDraft.bio" class="home__profile-input home__profile-input--bio" rows="6" />
+            <textarea v-else :value="profile.bio" readonly class="home__profile-input home__profile-input--bio" rows="6" />
           </div>
         </div>
         <RouterLink to="/thanks" class="home__info-link">致谢</RouterLink>
@@ -604,41 +598,26 @@ function imgStyle(img: ImageItem) {
   padding: 20px 0;
 }
 
-.home__profile-title {
-  all: unset;
-  cursor: pointer;
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: var(--btn-text-color, #333);
-}
-
-.home__profile-subtitle {
-  margin: 0;
-  font-size: 1rem;
-  color: var(--btn-text-color, #666);
-}
-
-.home__profile-bio {
-  margin: 0;
-  font-size: 0.9rem;
-  line-height: 1.8;
-  color: var(--btn-text-color, #666);
-  white-space: pre-wrap;
-}
-
 /* 个人介绍编辑模式 */
 .home__profile-edit-box {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding: 12px;
+}
+
+.home__profile-edit-box--active {
   outline: 2px dashed #000;
   outline-offset: -1px;
-  padding: 12px;
 }
 
 .home__profile-actions {
   display: flex;
   gap: 8px;
+}
+
+.home__profile-actions--hidden {
+  visibility: hidden;
 }
 
 .home__profile-btn {
@@ -689,6 +668,14 @@ function imgStyle(img: ImageItem) {
   font-size: 0.9rem;
   line-height: 1.8;
   resize: vertical;
+}
+
+.home__profile-input[readonly] {
+  opacity: 1;
+}
+
+.home__profile-input--title[readonly] {
+  cursor: pointer;
 }
 
 .home__info-link {
