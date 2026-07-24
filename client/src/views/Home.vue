@@ -21,6 +21,7 @@ interface ImageItem {
 
 const images = ref<ImageItem[]>([])
 const permissions = ref<string[]>([])
+const profile = ref({ title: '标题', subtitle: '副标题', bio: '简介' })
 
 const previewId = ref<number | null>(null)
 const previewImage = computed(() =>
@@ -60,6 +61,11 @@ watch(previewImage, async (img) => {
 
 onMounted(async () => {
   await loadImages()
+  // 加载个人介绍
+  try {
+    const r = await fetch('/api/profile')
+    if (r.ok) profile.value = await r.json()
+  } catch { /* 静默 */ }
   if (auth.isLoggedIn && auth.id !== null) {
     try {
       const resp = await fetch(`/api/user/permissions?user_id=${auth.id}`)
@@ -471,6 +477,9 @@ function imgStyle(img: ImageItem) {
         </div>
       </div>
       <div class="home__info">
+        <button class="home__profile-title">{{ profile.title }}</button>
+        <p class="home__profile-subtitle">{{ profile.subtitle }}</p>
+        <p class="home__profile-bio" v-html="profile.bio.replace(/\n/g, '<br>')" />
         <RouterLink to="/thanks" class="home__info-link">致谢</RouterLink>
       </div>
     </div>
@@ -531,9 +540,35 @@ function imgStyle(img: ImageItem) {
   outline-offset: -1px;
 }
 
-/* .home__info {
-  右侧信息栏
-} */
+/* 右侧信息栏 */
+.home__info {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px 0;
+}
+
+.home__profile-title {
+  all: unset;
+  cursor: pointer;
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--btn-text-color, #333);
+}
+
+.home__profile-subtitle {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--btn-text-color, #666);
+}
+
+.home__profile-bio {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: var(--btn-text-color, #666);
+  white-space: pre-wrap;
+}
 
 .home__info-link {
   display: inline-block;

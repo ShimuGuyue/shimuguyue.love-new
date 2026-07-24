@@ -9,6 +9,7 @@
 #include "blog/blog_queries.h"
 #include "image/image_queries.h"
 #include "md/markdown_parser.h"
+#include "profile/profile_queries.h"
 
 #include <algorithm>
 #include <cstdlib>
@@ -726,6 +727,17 @@ void setup_routes(httplib::Server& svr, pqxx::connection& conn)
             }
 
             res.set_content(R"({"ok":true})", "application/json");
+        }
+    );
+
+    // GET /api/profile — 获取个人介绍
+    svr.Get("/api/profile",
+        [&conn, allowed](const auto&, auto& res)
+        {
+            std::lock_guard<std::mutex> lock{ g_db_mutex };
+            res.set_header("Access-Control-Allow-Origin", allowed);
+            res.set_header("Content-Type", "application/json");
+            res.set_content(profile::get_profile(conn).dump(), "application/json");
         }
     );
 }
