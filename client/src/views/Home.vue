@@ -720,7 +720,7 @@ function imgStyle(img: ImageItem) {
   font-size: 0.9rem;
   line-height: 1.8;
   resize: none;
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid #000;
   padding-bottom: 8px;
   font-weight: 600;
   color: var(--title-color, #3451b2);
