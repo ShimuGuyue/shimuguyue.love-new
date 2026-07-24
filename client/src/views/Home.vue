@@ -594,6 +594,7 @@ function imgStyle(img: ImageItem) {
 .home__info {
   display: flex;
   flex-direction: column;
+  align-items: flex-end;
   gap: 12px;
   padding: 20px 0;
 }
@@ -653,6 +654,7 @@ function imgStyle(img: ImageItem) {
   padding: 6px 8px;
   font-family: inherit;
   box-sizing: border-box;
+  text-align: right;
 }
 
 .home__profile-input--title {
