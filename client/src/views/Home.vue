@@ -15,6 +15,8 @@ interface ImageItem {
   pos_x: number
   pos_y: number
   z: number
+  w?: number
+  h?: number
 }
 
 const images = ref<ImageItem[]>([])
@@ -104,16 +106,43 @@ async function loadImages() {
 }
 
 /** 每隔约一秒往数组里推入一张图片 */
+/** 逐张预加载尺寸后推入，避免定位跳动 */
 async function revealImages(all: ImageItem[]) {
+  // 预加载所有图片获取原始尺寸
+  const sized: (ImageItem & { w: number; h: number })[] = []
+  for (const img of all) {
+    const size = await loadImageSize(img.path)
+    sized.push({ ...img, w: size.w, h: size.h })
+  }
+
   return new Promise<void>((resolve) => {
     let i = 0
     function next() {
-      if (i >= all.length) { resolve(); return }
-      images.value.push(all[i]!)
+      if (i >= sized.length) { resolve(); return }
+      images.value.push(sized[i]!)
       i++
       revealTimer = setTimeout(next, REVEAL_MS)
     }
     next()
+  })
+}
+
+function loadImageSize(path: string): Promise<{ w: number; h: number }> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const MAX = 300
+      let w = img.naturalWidth
+      let h = img.naturalHeight
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX / w, MAX / h)
+        w = Math.round(w * ratio)
+        h = Math.round(h * ratio)
+      }
+      resolve({ w, h })
+    }
+    img.onerror = () => resolve({ w: 200, h: 200 })
+    img.src = `/image/${path}`
   })
 }
 
@@ -395,7 +424,7 @@ function imgStyle(img: ImageItem) {
           <div
             class="home__img-wrap"
             :class="{ 'home__img--edit': editMode, 'home__img-wrap--pending': editMode && pendingDeletes.has(img.id) }"
-            :style="{ transform: `scale(${img.scale}) rotate(${img.rotation}deg)` }"
+            :style="{ width: img.w + 'px', height: img.h + 'px', transform: `scale(${img.scale}) rotate(${img.rotation}deg)` }"
             @mousedown="e => onImgMouseDown(e, img.id)"
             @click.stop="handleImgClick(img.id, $event)"
             @wheel.prevent="e => onImgWheel(e, img.id)"
@@ -515,8 +544,7 @@ function imgStyle(img: ImageItem) {
 .home__img-wrap {
   position: relative;
   cursor: pointer;
-  border: 5px solid var(--img-border, var(--color-border));
-  border-color: var(--img-border);
+  outline: 4px solid var(--img-border, var(--color-border));
 }
 
 .home__img--edit {
