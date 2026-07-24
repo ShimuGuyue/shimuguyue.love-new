@@ -232,6 +232,10 @@ function markDelete(img: ImageItem) {
 }
 
 async function uploadImage() {
+  if (!permissions.value.includes('edit')) {
+    alert('当前用户无 edit 权限，无法上传图片')
+    return
+  }
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = 'image/*'
