@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useThemeStore } from '@/stores/theme'
 
@@ -15,6 +15,8 @@ interface ImageItem {
   pos_x: number
   pos_y: number
   z: number
+  w?: number
+  h?: number
 }
 
 const images = ref<ImageItem[]>([])
@@ -69,11 +71,79 @@ onMounted(async () => {
   }
 })
 
+onUnmounted(() => {
+  if (revealTimer !== null) {
+    clearTimeout(revealTimer)
+    revealTimer = null
+  }
+})
+
+/// 图片逐个渲染的间隔和动画时长（毫秒）
+const REVEAL_MS = 500
+
+/// 图片逐个渲染的定时器
+let revealTimer: ReturnType<typeof setTimeout> | null = null
+
 async function loadImages() {
+  // 清除上一次未完成的定时器
+  if (revealTimer !== null) {
+    clearTimeout(revealTimer)
+    revealTimer = null
+  }
+
   try {
     const resp = await fetch('/api/images')
-    if (resp.ok) images.value = await resp.json()
+    if (!resp.ok) return
+    const all: ImageItem[] = await resp.json()
+
+    // 按层次从低到高排列（z 值低的先渲染）
+    all.sort((a, b) => a.z - b.z)
+
+    // 清空后逐张渲染
+    images.value = []
+    await revealImages(all)
   } catch { /* 静默 */ }
+}
+
+/** 每隔约一秒往数组里推入一张图片 */
+/** 逐张预加载尺寸后推入，避免定位跳动 */
+async function revealImages(all: ImageItem[]) {
+  // 预加载所有图片获取原始尺寸
+  const sized: (ImageItem & { w: number; h: number })[] = []
+  for (const img of all) {
+    const size = await loadImageSize(img.path)
+    sized.push({ ...img, w: size.w, h: size.h })
+  }
+
+  return new Promise<void>((resolve) => {
+    let i = 0
+    function next() {
+      if (i >= sized.length) { resolve(); return }
+      images.value.push(sized[i]!)
+      i++
+      revealTimer = setTimeout(next, REVEAL_MS)
+    }
+    next()
+  })
+}
+
+function loadImageSize(path: string): Promise<{ w: number; h: number }> {
+  return new Promise((resolve) => {
+    const img = new Image()
+    img.onload = () => {
+      const MAX = 300
+      let w = img.naturalWidth
+      let h = img.naturalHeight
+      if (w > MAX || h > MAX) {
+        const ratio = Math.min(MAX / w, MAX / h)
+        w = Math.round(w * ratio)
+        h = Math.round(h * ratio)
+      }
+      resolve({ w, h })
+    }
+    img.onerror = () => resolve({ w: 200, h: 200 })
+    img.src = `/image/${path}`
+  })
 }
 
 const editMode = ref(false)
@@ -311,10 +381,10 @@ function imgStyle(img: ImageItem) {
 </script>
 
 <template>
-  <main class="home">
+  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff' }">
     <div class="home__layout">
       <div
-        class="home__photo glass"
+        :class="{ 'home__photo': true, 'home__photo--edit': editMode }"
         @click="onWallClick"
         @mousemove="onWallMouseMove"
         @mouseup="onWallMouseUp"
@@ -348,13 +418,13 @@ function imgStyle(img: ImageItem) {
         <div
           v-for="img in images"
           :key="img.id"
-          class="home__img"
-          :style="{ left: img.pos_x + '%', top: img.pos_y + '%', transform: 'translate(-50%, -50%)', zIndex: img.z || 0 }"
+          class="home__img home__img--enter"
+          :style="{ left: img.pos_x + '%', top: img.pos_y + '%', zIndex: img.z || 0 }"
         >
           <div
             class="home__img-wrap"
             :class="{ 'home__img--edit': editMode, 'home__img-wrap--pending': editMode && pendingDeletes.has(img.id) }"
-            :style="{ transform: `scale(${img.scale}) rotate(${img.rotation}deg)` }"
+            :style="{ width: img.w + 'px', height: img.h + 'px', transform: `scale(${img.scale}) rotate(${img.rotation}deg)` }"
             @mousedown="e => onImgMouseDown(e, img.id)"
             @click.stop="handleImgClick(img.id, $event)"
             @wheel.prevent="e => onImgWheel(e, img.id)"
@@ -429,6 +499,11 @@ function imgStyle(img: ImageItem) {
   user-select: none;
 }
 
+.home__photo--edit {
+  outline: 2px dashed #000;
+  outline-offset: -1px;
+}
+
 /* .home__info {
   右侧信息栏
 } */
@@ -449,12 +524,23 @@ function imgStyle(img: ImageItem) {
 .home__img {
   position: absolute;
   cursor: pointer;
+  transform: translate(-50%, -50%);
+}
+
+.home__img--enter {
+  animation: img-pop-in var(--reveal-duration, 0.5s) ease-out both;
+}
+
+@keyframes img-pop-in {
+  from {
+    transform: translate(-50%, -50%) scale(0);
+    opacity: 0;
+  }
 }
 .home__img img {
   display: block;
   max-width: 300px;
   max-height: 300px;
-  border-radius: 4px;
   object-fit: contain;
   pointer-events: none;
   user-select: none;
@@ -467,9 +553,6 @@ function imgStyle(img: ImageItem) {
 
 .home__img--edit {
   cursor: grab;
-  outline: 2px dashed var(--pink-soft);
-  outline-offset: 4px;
-  border-radius: 4px;
 }
 
 .home__img-del {
