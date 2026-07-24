@@ -445,7 +445,7 @@ function imgStyle(img: ImageItem) {
         <div
           v-for="img in images"
           :key="img.id"
-          class="home__img home__img--enter"
+          :class="{ 'home__img': true, 'home__img--enter': true, 'home__img--pending': editMode && pendingDeletes.has(img.id) }"
           :style="{ left: img.pos_x + '%', top: img.pos_y + '%', zIndex: img.z || 0 }"
         >
           <div
@@ -558,6 +558,10 @@ function imgStyle(img: ImageItem) {
   animation: img-pop-in var(--reveal-duration, 0.5s) ease-out both;
 }
 
+.home__img--pending {
+  pointer-events: none;
+}
+
 @keyframes img-pop-in {
   from {
     transform: translate(-50%, -50%) scale(0);
@@ -602,6 +606,7 @@ function imgStyle(img: ImageItem) {
 
 .home__img-wrap--pending {
   opacity: 0;
+  pointer-events: none;
 }
 .home__img-wrap--pending .home__img-del {
   background: #666;
