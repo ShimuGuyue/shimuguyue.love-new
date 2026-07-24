@@ -602,7 +602,6 @@ function imgStyle(img: ImageItem) {
 .home__profile-edit-box {
   display: flex;
   flex-direction: column;
-  gap: 10px;
   padding: 12px;
 }
 
