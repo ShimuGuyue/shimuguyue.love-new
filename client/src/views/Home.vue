@@ -171,11 +171,24 @@ function bringToFront(imgId: number) {
 }
 
 /// 点击照片墙内进入编辑模式，点击外部退出编辑模式
+function profileHasChanges(): boolean {
+  return profileDraft.value.title !== profile.value.title
+    || profileDraft.value.subtitle !== profile.value.subtitle
+    || profileDraft.value.bio !== profile.value.bio
+}
+
 function onWallClick(e: MouseEvent) {
   // 点击预览遮罩时不处理
   if ((e.target as HTMLElement).closest('.home__preview')) return
   const inPhoto = !!(e.target as HTMLElement).closest('.home__photo')
   const onImg = !!(e.target as HTMLElement).closest('.home__img')
+  const inProfileEdit = !!(e.target as HTMLElement).closest('.home__profile-edit-box')
+
+  if (profileEditMode.value) {
+    // 个人介绍编辑：点击外部且无修改时退出
+    if (!inProfileEdit && !profileHasChanges()) cancelProfileEdit()
+    return
+  }
 
   if (editMode.value) {
     // 编辑模式下：仅点击外部且无修改时退出
@@ -237,7 +250,7 @@ function hasChanges(): boolean {
     const snap = JSON.parse(editSnapshot.value) as Pick<ImageItem, 'id' | 'pos_x' | 'pos_y' | 'scale' | 'rotation' | 'description'>[]
     for (const img of images.value) {
       const s = snap.find(s => s.id === img.id)
-      if (!s) return true
+      if (!s) continue
       if (s.pos_x !== img.pos_x || s.pos_y !== img.pos_y || s.scale !== img.scale || s.rotation !== img.rotation || s.description !== img.description) return true
     }
     return false
