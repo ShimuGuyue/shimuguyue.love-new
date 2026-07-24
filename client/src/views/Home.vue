@@ -384,7 +384,7 @@ function imgStyle(img: ImageItem) {
   <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff' }">
     <div class="home__layout">
       <div
-        class="home__photo glass"
+        :class="{ 'home__photo': true, 'home__photo--edit': editMode }"
         @click="onWallClick"
         @mousemove="onWallMouseMove"
         @mouseup="onWallMouseUp"
@@ -499,6 +499,11 @@ function imgStyle(img: ImageItem) {
   user-select: none;
 }
 
+.home__photo--edit {
+  outline: 2px dashed #000;
+  outline-offset: -1px;
+}
+
 /* .home__info {
   右侧信息栏
 } */
@@ -544,13 +549,10 @@ function imgStyle(img: ImageItem) {
 .home__img-wrap {
   position: relative;
   cursor: pointer;
-  outline: 4px solid var(--img-border, var(--color-border));
 }
 
 .home__img--edit {
   cursor: grab;
-  outline: 2px dashed var(--pink-soft);
-  outline-offset: 4px;
 }
 
 .home__img-del {
