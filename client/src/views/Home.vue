@@ -667,7 +667,7 @@ function imgStyle(img: ImageItem) {
 .home__profile-input--bio {
   font-size: 0.9rem;
   line-height: 1.8;
-  resize: vertical;
+  resize: none;
 }
 
 .home__profile-input[readonly] {
