@@ -511,16 +511,14 @@ function imgStyle(img: ImageItem) {
       </div>
       <div class="home__info">
         <div class="home__profile-edit-box" :class="{ 'home__profile-edit-box--active': profileEditMode }">
-          <div class="home__profile-actions" :class="{ 'home__profile-actions--hidden': !profileEditMode }">
-            <button class="home__profile-btn home__profile-btn--cancel" @click="cancelProfileEdit">取消编辑</button>
-            <button
-              class="home__profile-btn home__profile-btn--save"
-              :disabled="!permissions.includes('edit')"
-              @click="saveProfile"
-            >完成编辑</button>
-          </div>
-          <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }">
-            <input :value="profileEditMode ? profileDraft.title : profile.title" @input="profileEditMode && (profileDraft.title = ($event.target as HTMLInputElement).value)" :readonly="!profileEditMode" class="home__profile-input home__profile-input--title" @click="!profileEditMode && enterProfileEdit()" />
+          <div class="home__profile-field home__profile-field--title-row">
+            <div class="home__profile-actions" :class="{ 'home__profile-actions--hidden': !profileEditMode }">
+              <button class="home__profile-btn home__profile-btn--save" :disabled="!permissions.includes('edit')" @click="saveProfile">完成编辑</button>
+              <button class="home__profile-btn home__profile-btn--cancel" @click="cancelProfileEdit">取消编辑</button>
+            </div>
+            <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }" style="flex:1; margin-right: 4rem">
+              <input :value="profileEditMode ? profileDraft.title : profile.title" @input="profileEditMode && (profileDraft.title = ($event.target as HTMLInputElement).value)" :readonly="!profileEditMode" class="home__profile-input home__profile-input--title" @click="!profileEditMode && enterProfileEdit()" />
+            </div>
           </div>
           <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }">
             <input :value="profileEditMode ? profileDraft.subtitle : profile.subtitle" @input="profileEditMode && (profileDraft.subtitle = ($event.target as HTMLInputElement).value)" :readonly="!profileEditMode" class="home__profile-input home__profile-input--subtitle" />
@@ -596,8 +594,8 @@ function imgStyle(img: ImageItem) {
   flex-direction: column;
   align-items: flex-end;
   gap: 12px;
-  padding: 20px 0;
-  padding-right: 36px;
+  padding: 0 0 20px 0;
+  padding-right: 24px;
 }
 
 /* 个人介绍编辑模式 */
@@ -615,7 +613,15 @@ function imgStyle(img: ImageItem) {
 
 .home__profile-actions {
   display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.home__profile-field--title-row {
+  display: flex;
   gap: 8px;
+  align-items: center;
 }
 
 .home__profile-actions--hidden {
@@ -659,12 +665,12 @@ function imgStyle(img: ImageItem) {
 }
 
 .home__profile-input--title {
-  font-size: 1.6rem;
+  font-size: 5rem;
   font-weight: 700;
 }
 
 .home__profile-input--subtitle {
-  font-size: 1rem;
+  font-size: 1.3rem;
 }
 
 .home__profile-input--bio {
