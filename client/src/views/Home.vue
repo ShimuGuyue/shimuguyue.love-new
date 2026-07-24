@@ -338,7 +338,21 @@ async function uploadImage() {
       alert(err.error || '上传失败')
       return
     }
-    await loadImages()
+    const uploaded = await resp.json() as { id: number; path: string }
+    const size = await loadImageSize(uploaded.path)
+    zCounter = Math.max(zCounter, images.value.reduce((m, i) => Math.max(m, i.z), 0)) + 1
+    images.value.push({
+      id: uploaded.id,
+      path: uploaded.path,
+      description: '',
+      scale: 1.0,
+      rotation: 0,
+      pos_x: 50,
+      pos_y: 50,
+      z: zCounter,
+      w: size.w,
+      h: size.h,
+    })
   }
   input.click()
 }
