@@ -464,6 +464,7 @@ function imgStyle(img: ImageItem) {
             <button
               v-if="editMode"
               class="home__img-del"
+              :style="{ transform: `scale(${1 / img.scale})` }"
               @click.stop="markDelete(img)"
             >✕</button>
           </div>
@@ -583,11 +584,11 @@ function imgStyle(img: ImageItem) {
 
 .home__img-del {
   position: absolute;
-  top: -10px;
-  right: -10px;
+  top: -8px;
+  right: -8px;
   z-index: 10;
-  width: 22px;
-  height: 22px;
+  width: 16px;
+  height: 16px;
   border: none;
   border-radius: 50%;
   background: #d44;
