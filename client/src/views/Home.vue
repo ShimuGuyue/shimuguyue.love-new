@@ -717,12 +717,13 @@ function imgStyle(img: ImageItem) {
 }
 
 .home__profile-input--bio {
-  font-size: 0.9rem;
+  font-size: 1.1rem;
   line-height: 1.8;
   resize: none;
   border-bottom: 1px solid #000;
   padding-bottom: 8px;
-  font-weight: 600;
+  font-weight: 700;
+  font-family: FangSong, STFangsong, serif;
   color: var(--title-color, #3451b2);
 }
 
