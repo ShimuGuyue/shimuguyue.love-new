@@ -578,6 +578,29 @@ void setup_routes(httplib::Server& svr, pqxx::connection& conn)
             const auto file = req.form.get_file("file");
 
             std::lock_guard<std::mutex> lock{ g_db_mutex };
+
+            // Session 验证
+            std::string token;
+            if (req.has_header("Authorization")) {
+                const auto& auth_hdr = req.get_header_value("Authorization");
+                constexpr std::string_view PREFIX = "Bearer ";
+                if (auth_hdr.size() > PREFIX.size() &&
+                    auth_hdr.compare(0, PREFIX.size(), PREFIX) == 0)
+                    token = auth_hdr.substr(PREFIX.size());
+            }
+            const auto session = auth::validate_session(conn, token);
+            if (!session) {
+                res.status = 401;
+                res.set_content(R"({"error":"未登录或会话已过期"})", "application/json");
+                return;
+            }
+            const auto& perms = session->permissions;
+            if (std::find(perms.begin(), perms.end(), "edit") == perms.end()) {
+                res.status = 403;
+                res.set_content(R"({"error":"当前用户无 edit 权限"})", "application/json");
+                return;
+            }
+
             auto [err, result] = img::upload_image(conn, file.filename, file.content);
             if (!err.empty()) {
                 res.status = 500;
