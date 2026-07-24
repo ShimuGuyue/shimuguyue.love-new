@@ -409,7 +409,7 @@ function imgStyle(img: ImageItem) {
 </script>
 
 <template>
-  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff' }" @click="onWallClick">
+  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff', '--btn-text-color': theme.isDark ? '#fff' : '#000' }" @click="onWallClick">
     <div class="home__layout">
       <div
         :class="{ 'home__photo': true, 'home__photo--edit': editMode }"
@@ -610,11 +610,11 @@ function imgStyle(img: ImageItem) {
   position: absolute;
   top: 12px;
   right: 12px;
-  z-index: 100;
+  z-index: 9999;
   padding: 6px 16px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--color-text);
+  color: var(--btn-text-color, #333);
   font-size: 0.8rem;
   cursor: pointer;
 }
@@ -623,11 +623,11 @@ function imgStyle(img: ImageItem) {
   position: absolute;
   top: 12px;
   right: 200px;
-  z-index: 100;
+  z-index: 9999;
   padding: 6px 16px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--pink-soft);
+  color: var(--btn-text-color, #333);
   font-size: 0.8rem;
   cursor: pointer;
 }
@@ -636,11 +636,11 @@ function imgStyle(img: ImageItem) {
   position: absolute;
   top: 12px;
   right: 100px;
-  z-index: 100;
+  z-index: 9999;
   padding: 6px 16px;
   border: 1px solid var(--color-border);
   border-radius: 4px;
-  color: var(--color-text-secondary);
+  color: var(--btn-text-color, #666);
   font-size: 0.8rem;
   cursor: pointer;
 }
@@ -649,10 +649,10 @@ function imgStyle(img: ImageItem) {
   position: absolute;
   bottom: 12px;
   right: 12px;
-  z-index: 100;
+  z-index: 9999;
   padding: 8px 14px;
   border-radius: 4px;
-  color: var(--color-text-secondary);
+  color: var(--btn-text-color, #666);
   font-size: 0.75rem;
   line-height: 1.7;
 }
