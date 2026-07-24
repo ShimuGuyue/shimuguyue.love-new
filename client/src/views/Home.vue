@@ -94,6 +94,9 @@ async function loadImages() {
     if (!resp.ok) return
     const all: ImageItem[] = await resp.json()
 
+    // 按层次从低到高排列（z 值低的先渲染）
+    all.sort((a, b) => a.z - b.z)
+
     // 清空后逐张渲染
     images.value = []
     await revealImages(all)
