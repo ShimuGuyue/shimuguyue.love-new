@@ -513,8 +513,8 @@ function imgStyle(img: ImageItem) {
         <div class="home__profile-edit-box" :class="{ 'home__profile-edit-box--active': profileEditMode }">
           <div class="home__profile-field home__profile-field--title-row">
             <div class="home__profile-actions" :class="{ 'home__profile-actions--hidden': !profileEditMode }">
-              <button class="home__profile-btn home__profile-btn--save" :disabled="!permissions.includes('edit')" @click="saveProfile">完成编辑</button>
-              <button class="home__profile-btn home__profile-btn--cancel" @click="cancelProfileEdit">取消编辑</button>
+              <button class="home__profile-btn home__profile-btn--save" :disabled="!permissions.includes('edit')" :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }" @click="saveProfile">完成编辑</button>
+              <button class="home__profile-btn home__profile-btn--cancel" :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }" @click="cancelProfileEdit">取消编辑</button>
             </div>
             <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }" style="flex:1; margin-right: 4rem">
               <input :value="profileEditMode ? profileDraft.title : profile.title" @input="profileEditMode && (profileDraft.title = ($event.target as HTMLInputElement).value)" :readonly="!profileEditMode" class="home__profile-input home__profile-input--title" @click="!profileEditMode && enterProfileEdit()" />
