@@ -521,7 +521,6 @@ function imgStyle(img: ImageItem) {
 
 .home__photo {
   position: relative;
-  overflow: hidden;
   min-height: 100%;
   user-select: none;
 }
