@@ -669,7 +669,35 @@ function imgStyle(img: ImageItem) {
 }
 
 .home__profile-input--subtitle {
-  font-size: 1.3rem;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--title-color, #3451b2);
+  display: inline-block;
+
+  /* 米哈游 https://www.mihoyo.com/?page=product 同款科技蓝与霓虹粉斜向渐变 */
+  background-image: linear-gradient(
+    -135deg, 
+    rgb(55, 120, 229), 
+    rgb(233, 139, 192), 
+    rgb(55, 120, 229), 
+    rgb(233, 139, 192), 
+    rgb(55, 120, 229)
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: mihoyo-gradient-flow 10s linear infinite;
+}
+/* 定义渐变流动动画：改变 background-position */
+@keyframes mihoyo-gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: -200% 50%;
+  }
 }
 
 .home__profile-input--bio {
