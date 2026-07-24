@@ -707,6 +707,8 @@ function imgStyle(img: ImageItem) {
   font-size: 0.9rem;
   line-height: 1.8;
   resize: none;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 8px;
   font-weight: 600;
   color: var(--title-color, #3451b2);
 }
@@ -723,10 +725,11 @@ function imgStyle(img: ImageItem) {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 4px;
-  color: var(--color-text-secondary);
-  font-size: 0.85rem;
+  color: #000;
+  font-size: 1.1rem;
   text-decoration: none;
   transition: color 0.15s;
+  font-weight: 700;
 }
 .home__info-link:hover {
   color: var(--pink-hot);
