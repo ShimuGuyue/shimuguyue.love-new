@@ -21,7 +21,9 @@ interface ImageItem {
 
 const images = ref<ImageItem[]>([])
 const permissions = ref<string[]>([])
-const profile = ref({ title: '标题', subtitle: '副标题', bio: '简介' })
+const profile = ref({ title: '', subtitle: '', bio: '' })
+const profileEditMode = ref(false)
+const profileDraft = ref({ title: '', subtitle: '', bio: '' })
 
 const previewId = ref<number | null>(null)
 const previewImage = computed(() =>
@@ -60,21 +62,19 @@ watch(previewImage, async (img) => {
 })
 
 onMounted(async () => {
-  await loadImages()
-  // 加载个人介绍
-  try {
-    const r = await fetch('/api/profile')
-    if (r.ok) profile.value = await r.json()
-  } catch { /* 静默 */ }
-  if (auth.isLoggedIn && auth.id !== null) {
-    try {
-      const resp = await fetch(`/api/user/permissions?user_id=${auth.id}`)
-      if (resp.ok) {
-        const data = await resp.json()
-        permissions.value = data.permissions || []
-      }
-    } catch { /* 静默 */ }
-  }
+  // 个人介绍和权限与图片加载并行
+  const profilePromise = fetch('/api/profile').then(r => r.ok ? r.json() : null).catch(() => null)
+  const permsPromise = auth.isLoggedIn && auth.id !== null
+    ? fetch(`/api/user/permissions?user_id=${auth.id}`).then(r => r.ok ? r.json() : null).catch(() => null)
+    : null
+
+  const loadPromise = loadImages()
+
+  const [pf, pm] = await Promise.all([profilePromise, permsPromise])
+  if (pf) profile.value = pf
+  if (pm?.permissions) permissions.value = pm.permissions
+
+  await loadPromise
 })
 
 onUnmounted(() => {
@@ -405,6 +405,39 @@ function closePreview() {
   previewSrcRect.value = null
 }
 
+// ── 个人介绍编辑 ──
+
+function enterProfileEdit() {
+  profileDraft.value = { ...profile.value }
+  profileEditMode.value = true
+}
+
+function cancelProfileEdit() {
+  profileEditMode.value = false
+}
+
+async function saveProfile() {
+  if (!permissions.value.includes('edit')) {
+    alert('当前用户无 edit 权限')
+    return
+  }
+  const resp = await fetch('/api/profile/save', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${auth.token}`,
+    },
+    body: JSON.stringify(profileDraft.value),
+  })
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ error: '保存失败' }))
+    alert(err.error || '保存失败')
+    return
+  }
+  profile.value = { ...profileDraft.value }
+  profileEditMode.value = false
+}
+
 function imgStyle(img: ImageItem) {
   return {
     left: `${img.pos_x}%`,
@@ -477,9 +510,32 @@ function imgStyle(img: ImageItem) {
         </div>
       </div>
       <div class="home__info">
-        <button class="home__profile-title">{{ profile.title }}</button>
-        <p class="home__profile-subtitle">{{ profile.subtitle }}</p>
-        <p class="home__profile-bio" v-html="profile.bio.replace(/\n/g, '<br>')" />
+        <!-- 查看模式 -->
+        <template v-if="!profileEditMode">
+          <button class="home__profile-title" @click="enterProfileEdit">{{ profile.title }}</button>
+          <p class="home__profile-subtitle">{{ profile.subtitle }}</p>
+          <p class="home__profile-bio" v-html="profile.bio.replace(/\n/g, '<br>')" />
+        </template>
+        <!-- 编辑模式 -->
+        <div v-else class="home__profile-edit-box">
+          <div class="home__profile-actions">
+            <button class="home__profile-btn home__profile-btn--cancel" @click="cancelProfileEdit">取消编辑</button>
+            <button
+              class="home__profile-btn home__profile-btn--save"
+              :disabled="!permissions.includes('edit')"
+              @click="saveProfile"
+            >完成编辑</button>
+          </div>
+          <div class="home__profile-field home__profile-field--dashed">
+            <input v-model="profileDraft.title" class="home__profile-input home__profile-input--title" />
+          </div>
+          <div class="home__profile-field home__profile-field--dashed">
+            <input v-model="profileDraft.subtitle" class="home__profile-input home__profile-input--subtitle" />
+          </div>
+          <div class="home__profile-field home__profile-field--dashed">
+            <textarea v-model="profileDraft.bio" class="home__profile-input home__profile-input--bio" rows="6" />
+          </div>
+        </div>
         <RouterLink to="/thanks" class="home__info-link">致谢</RouterLink>
       </div>
     </div>
@@ -568,6 +624,71 @@ function imgStyle(img: ImageItem) {
   line-height: 1.8;
   color: var(--btn-text-color, #666);
   white-space: pre-wrap;
+}
+
+/* 个人介绍编辑模式 */
+.home__profile-edit-box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  outline: 2px dashed #000;
+  outline-offset: -1px;
+  padding: 12px;
+}
+
+.home__profile-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.home__profile-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: none;
+  color: var(--btn-text-color, #333);
+}
+
+.home__profile-btn--cancel {
+  color: var(--btn-text-color, #666);
+}
+
+.home__profile-btn--save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.home__profile-field--dashed {
+  outline: 2px dashed #000;
+  outline-offset: -1px;
+}
+
+.home__profile-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--btn-text-color, #333);
+  outline: none;
+  padding: 6px 8px;
+  font-family: inherit;
+  box-sizing: border-box;
+}
+
+.home__profile-input--title {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+
+.home__profile-input--subtitle {
+  font-size: 1rem;
+}
+
+.home__profile-input--bio {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  resize: vertical;
 }
 
 .home__info-link {

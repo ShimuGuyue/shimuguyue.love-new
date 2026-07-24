@@ -25,4 +25,24 @@ auto get_profile(pqxx::connection& conn) -> nlohmann::json
     return j;
 }
 
+auto update_profile(
+    pqxx::connection& conn,
+    std::string_view  title,
+    std::string_view  subtitle,
+    std::string_view  bio)
+-> std::string
+{
+    pqxx::work txn{ conn };
+    txn.exec(
+        "UPDATE profile SET title = $1, subtitle = $2, bio = $3 WHERE id = 1",
+        pqxx::params{
+            std::string{title},
+            std::string{subtitle},
+            std::string{bio}
+        }
+    );
+    txn.commit();
+    return {};
+}
+
 } // namespace profile

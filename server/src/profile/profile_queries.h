@@ -19,4 +19,19 @@ namespace profile {
  */
 [[nodiscard]] auto get_profile(pqxx::connection& conn) -> nlohmann::json;
 
+/**
+ * @brief 更新个人介绍。
+ * @param conn     数据库连接。
+ * @param title    标题。
+ * @param subtitle 副标题。
+ * @param bio      简介。
+ * @return 错误消息（空表示成功）。
+ */
+[[nodiscard]] auto update_profile(
+    pqxx::connection& conn,
+    std::string_view  title,
+    std::string_view  subtitle,
+    std::string_view  bio)
+-> std::string;
+
 } // namespace profile

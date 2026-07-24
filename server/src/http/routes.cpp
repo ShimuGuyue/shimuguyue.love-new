@@ -740,6 +740,60 @@ void setup_routes(httplib::Server& svr, pqxx::connection& conn)
             res.set_content(profile::get_profile(conn).dump(), "application/json");
         }
     );
+
+    // POST /api/profile/save — 更新个人介绍（需要 edit 权限）
+    svr.Post("/api/profile/save",
+        [&conn, allowed](const auto& req, auto& res)
+        {
+            std::lock_guard<std::mutex> lock{ g_db_mutex };
+            res.set_header("Access-Control-Allow-Origin", allowed);
+            res.set_header("Content-Type", "application/json");
+
+            // Session 验证
+            std::string token;
+            if (req.has_header("Authorization")) {
+                const auto& auth_hdr = req.get_header_value("Authorization");
+                constexpr std::string_view PREFIX = "Bearer ";
+                if (auth_hdr.size() > PREFIX.size() &&
+                    auth_hdr.compare(0, PREFIX.size(), PREFIX) == 0)
+                    token = auth_hdr.substr(PREFIX.size());
+            }
+            const auto session = auth::validate_session(conn, token);
+            if (!session) {
+                res.status = 401;
+                res.set_content(R"({"error":"未登录或会话已过期"})", "application/json");
+                return;
+            }
+            const auto& perms = session->permissions;
+            if (std::find(perms.begin(), perms.end(), "edit") == perms.end()) {
+                res.status = 403;
+                res.set_content(R"({"error":"当前用户无 edit 权限"})", "application/json");
+                return;
+            }
+
+            const auto body = nlohmann::json::parse(req.body, nullptr, false);
+            if (body.is_discarded()) {
+                res.status = 400;
+                res.set_content(R"({"error":"无效的 JSON"})", "application/json");
+                return;
+            }
+
+            const auto err = profile::update_profile(
+                conn,
+                body.value("title", ""),
+                body.value("subtitle", ""),
+                body.value("bio", "")
+            );
+            if (!err.empty()) {
+                res.status = 500;
+                nlohmann::json j;
+                j["error"] = err;
+                res.set_content(j.dump(), "application/json");
+                return;
+            }
+            res.set_content(R"({"ok":true})", "application/json");
+        }
+    );
 }
 
 } // namespace http
