@@ -597,6 +597,7 @@ function imgStyle(img: ImageItem) {
   align-items: flex-end;
   gap: 12px;
   padding: 20px 0;
+  padding-right: 36px;
 }
 
 /* 个人介绍编辑模式 */
