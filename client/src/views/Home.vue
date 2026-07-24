@@ -21,6 +21,9 @@ interface ImageItem {
 
 const images = ref<ImageItem[]>([])
 const permissions = ref<string[]>([])
+const profile = ref({ title: '', subtitle: '', bio: '' })
+const profileEditMode = ref(false)
+const profileDraft = ref({ title: '', subtitle: '', bio: '' })
 
 const previewId = ref<number | null>(null)
 const previewImage = computed(() =>
@@ -59,16 +62,19 @@ watch(previewImage, async (img) => {
 })
 
 onMounted(async () => {
-  await loadImages()
-  if (auth.isLoggedIn && auth.id !== null) {
-    try {
-      const resp = await fetch(`/api/user/permissions?user_id=${auth.id}`)
-      if (resp.ok) {
-        const data = await resp.json()
-        permissions.value = data.permissions || []
-      }
-    } catch { /* 静默 */ }
-  }
+  // 个人介绍和权限与图片加载并行
+  const profilePromise = fetch('/api/profile').then(r => r.ok ? r.json() : null).catch(() => null)
+  const permsPromise = auth.isLoggedIn && auth.id !== null
+    ? fetch(`/api/user/permissions?user_id=${auth.id}`).then(r => r.ok ? r.json() : null).catch(() => null)
+    : null
+
+  const loadPromise = loadImages()
+
+  const [pf, pm] = await Promise.all([profilePromise, permsPromise])
+  if (pf) profile.value = pf
+  if (pm?.permissions) permissions.value = pm.permissions
+
+  await loadPromise
 })
 
 onUnmounted(() => {
@@ -399,6 +405,39 @@ function closePreview() {
   previewSrcRect.value = null
 }
 
+// ── 个人介绍编辑 ──
+
+function enterProfileEdit() {
+  profileDraft.value = { ...profile.value }
+  profileEditMode.value = true
+}
+
+function cancelProfileEdit() {
+  profileEditMode.value = false
+}
+
+async function saveProfile() {
+  if (!permissions.value.includes('edit')) {
+    alert('当前用户无 edit 权限')
+    return
+  }
+  const resp = await fetch('/api/profile/save', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${auth.token}`,
+    },
+    body: JSON.stringify(profileDraft.value),
+  })
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({ error: '保存失败' }))
+    alert(err.error || '保存失败')
+    return
+  }
+  profile.value = { ...profileDraft.value }
+  profileEditMode.value = false
+}
+
 function imgStyle(img: ImageItem) {
   return {
     left: `${img.pos_x}%`,
@@ -409,7 +448,7 @@ function imgStyle(img: ImageItem) {
 </script>
 
 <template>
-  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff', '--btn-text-color': theme.isDark ? '#fff' : '#000' }" @click="onWallClick">
+  <main class="home" :style="{ '--reveal-duration': REVEAL_MS + 'ms', '--img-border': theme.isDark ? '#000' : '#fff', '--btn-text-color': '#000', '--title-color': theme.isDark ? '#8899ff' : '#3451b2' }" @click="onWallClick">
     <div class="home__layout">
       <div
         :class="{ 'home__photo': true, 'home__photo--edit': editMode }"
@@ -471,6 +510,24 @@ function imgStyle(img: ImageItem) {
         </div>
       </div>
       <div class="home__info">
+        <div class="home__profile-edit-box" :class="{ 'home__profile-edit-box--active': profileEditMode }">
+          <div class="home__profile-field home__profile-field--title-row">
+            <div class="home__profile-actions" :class="{ 'home__profile-actions--hidden': !profileEditMode }">
+              <button class="home__profile-btn home__profile-btn--save" :disabled="!permissions.includes('edit')" :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }" @click="saveProfile">完成编辑</button>
+              <button class="home__profile-btn home__profile-btn--cancel" :style="{ background: theme.isDark ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.2)' }" @click="cancelProfileEdit">取消编辑</button>
+            </div>
+            <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }" style="flex:1; margin-right: 4rem">
+              <input :value="profileEditMode ? profileDraft.title : profile.title" @input="profileEditMode && (profileDraft.title = ($event.target as HTMLInputElement).value)" :readonly="!profileEditMode" class="home__profile-input home__profile-input--title" @click="!profileEditMode && enterProfileEdit()" />
+            </div>
+          </div>
+          <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }">
+            <input :value="profileEditMode ? profileDraft.subtitle : profile.subtitle" @input="profileEditMode && (profileDraft.subtitle = ($event.target as HTMLInputElement).value)" :readonly="!profileEditMode" class="home__profile-input home__profile-input--subtitle" />
+          </div>
+          <div class="home__profile-field" :class="{ 'home__profile-field--dashed': profileEditMode }">
+            <textarea v-if="profileEditMode" v-model="profileDraft.bio" class="home__profile-input home__profile-input--bio" rows="6" />
+            <textarea v-else :value="profile.bio" readonly class="home__profile-input home__profile-input--bio" rows="6" />
+          </div>
+        </div>
         <RouterLink to="/thanks" class="home__info-link">致谢</RouterLink>
       </div>
     </div>
@@ -531,18 +588,148 @@ function imgStyle(img: ImageItem) {
   outline-offset: -1px;
 }
 
-/* .home__info {
-  右侧信息栏
-} */
+/* 右侧信息栏 */
+.home__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 0 0 20px 0;
+  padding-right: 24px;
+}
+
+/* 个人介绍编辑模式 */
+.home__profile-edit-box {
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+
+.home__profile-edit-box--active {
+  outline: 2px dashed #000;
+  outline-offset: -1px;
+}
+
+.home__profile-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.home__profile-field--title-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.home__profile-actions--hidden {
+  visibility: hidden;
+}
+
+.home__profile-btn {
+  padding: 4px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
+  background: none;
+  color: var(--btn-text-color, #333);
+}
+
+.home__profile-btn--cancel {
+  color: var(--btn-text-color, #666);
+}
+
+.home__profile-btn--save:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.home__profile-field--dashed {
+  outline: 2px dashed #000;
+  outline-offset: -1px;
+}
+
+.home__profile-input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--btn-text-color, #333);
+  outline: none;
+  padding: 6px 8px;
+  font-family: inherit;
+  box-sizing: border-box;
+  text-align: right;
+}
+
+.home__profile-input--title {
+  font-size: 5rem;
+  font-weight: 700;
+  color: var(--title-color, #3451b2);
+  text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+}
+
+.home__profile-input--subtitle {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--title-color, #3451b2);
+  
+  display: inline-block;
+
+  /* 米哈游 https://www.mihoyo.com/?page=product 同款科技蓝与霓虹粉斜向渐变 */
+  background-image: linear-gradient(
+    -135deg, 
+    rgb(55, 120, 229), 
+    rgb(233, 139, 192), 
+    rgb(55, 120, 229), 
+    rgb(233, 139, 192), 
+    rgb(55, 120, 229)
+  );
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: mihoyo-gradient-flow 10s linear infinite;
+}
+/* 定义渐变流动动画：改变 background-position */
+@keyframes mihoyo-gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: -200% 50%;
+  }
+}
+
+.home__profile-input--bio {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  resize: none;
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: 8px;
+  font-weight: 600;
+  color: var(--title-color, #3451b2);
+}
+
+.home__profile-input[readonly] {
+  opacity: 1;
+}
+
+.home__profile-input--title[readonly] {
+  cursor: pointer;
+}
 
 .home__info-link {
   display: inline-block;
   padding: 4px 12px;
   border-radius: 4px;
-  color: var(--color-text-secondary);
-  font-size: 0.85rem;
+  color: #000;
+  font-size: 1.1rem;
   text-decoration: none;
   transition: color 0.15s;
+  font-weight: 700;
 }
 .home__info-link:hover {
   color: var(--pink-hot);
@@ -726,6 +913,8 @@ function imgStyle(img: ImageItem) {
   line-height: 1.8;
   padding: 8px;
   resize: none;
+  font-weight: 600;
+  color: var(--title-color, #3451b2);
   outline: none;
   font-family: "仿宋", FangSong, serif;
   font-weight: bold;
