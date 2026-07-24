@@ -102,6 +102,9 @@ async function loadImages() {
     // 清空后逐张渲染
     images.value = []
     await revealImages(all)
+    // 初始化 z 计数器为当前最大 z 值 + 1
+    const maxZ = all.reduce((m, i) => Math.max(m, i.z), 0)
+    zCounter = maxZ + 1
   } catch { /* 静默 */ }
 }
 
@@ -154,7 +157,7 @@ const editSnapshot = ref<string>('')
 /// 待删除的图片 id 集合（完成编辑时统一删除）
 const pendingDeletes = ref<Set<number>>(new Set())
 /// z-index 计数器，每次交互递增
-let zCounter = 1
+let zCounter = 0
 
 function bringToFront(imgId: number) {
   const img = images.value.find(i => i.id === imgId)
