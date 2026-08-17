@@ -15,11 +15,9 @@
 !**/.codewhale/constitution.json
 .deepseek/
 
-### Test File
+### Temporary test files & Logs
 
-**/[Tt][Ee][Ss][Tt]/
-**/[Tt][Ee][Ss][Tt].*
-**/*.[Tt][Ee][Ss][Tt]
+temp/
 
 **/[Ll][Oo][Gg]/
 **/*.[Ll][Oo][Gg]
